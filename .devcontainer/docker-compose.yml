@@ -1,0 +1,33 @@
+name: floodplanet_compose
+services:
+  dev:
+    image: cefect/usf:dev-v3.6
+    volumes:
+      - ../:/workspace:delegated
+      - /home/cefect/LS/10_IO/2501_NSFc:/home/cefect/LS/10_IO/2501_NSFc:delegated
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /home/cefect/.config:/home/cefect/.config:rw
+      - /home/cefect/.codex:/home/cefect/.codex:rw
+    working_dir: /workspace
+    user: 1000:1000
+    tty: true
+    stdin_open: true
+    cpus: 6
+    mem_limit: 8g
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities:
+    #             - gpu
+    environment:
+      TMPDIR: /home/cefect/LS/10_IO/2501_NSFc/USFloods_inference/TMPDIR
+      CUDA_DEVICE_ORDER: PCI_BUS_ID
+      CUDA_VISIBLE_DEVICES: '0'
+      XDG_CONFIG_HOME: /home/cefect/.config
+      PYTHONPATH: /workspace
+    command:
+      - sleep infinity
