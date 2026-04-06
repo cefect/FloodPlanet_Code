@@ -129,3 +129,5 @@ _inputs
 _outputs
 
 .snakemake
+
+*.qgz
