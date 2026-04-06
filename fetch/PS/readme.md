@@ -24,3 +24,27 @@ What we observe
 ## Environment
 using image from USFloods_inference: `cefect/usf:dev-v3.6`
 could do something skinnier.. but this should work fine. 
+
+
+## fetching PSScene tiles
+
+`planet_sdk_orders_match_search_batch.py` runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). It searches `PSScene` within `PS_datetime +/- 24h`, keeps only scenes with `ortho_analytic_4b_sr` that fully cover the chip, writes a per-chip `summary.csv`, and writes one manifest per ordered item. Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
+
+Run the full fetch like this:
+
+```bash
+cd /workspace
+python fetch/PS/planet_sdk_orders_match_search_batch.py \
+    --index-fp /workspace/stac_catalog.geojson \
+    --out-dir /workspace/_outputs
+```
+
+Run one chip first to prove the setup:
+
+```bash
+cd /workspace
+python fetch/PS/planet_sdk_orders_match_search_batch.py \
+    --index-fp /workspace/stac_catalog.geojson \
+    --out-dir /workspace/_outputs \
+    --chip-id COL_23_11
+```
