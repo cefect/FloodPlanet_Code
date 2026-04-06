@@ -102,7 +102,8 @@ env.bak/
 venv.bak/
 
 # Editor settings
-.vscode/
+
+*.code-workspace
 .spyderproject
 .spyproject
 .ropeproject
@@ -122,3 +123,5 @@ lightning_logs/
 outputs/
 Trained_models_NeurIPS/
 *.p
+
+
