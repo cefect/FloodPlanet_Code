@@ -1,6 +1,6 @@
 """Batch Planet PSScene search and fetch over the FloodPlanet STAC index."""
 
-import argparse, asyncio, json, os, shutil, sys, time
+import argparse, asyncio, json, shutil, sys, time
 from pathlib import Path
 
 import geopandas as gpd
@@ -49,7 +49,7 @@ def main_planet_sdk_orders_match_search_batch(path_d, search_d, planet_d, run_d)
     index_gdf = _1_read_index(path_d=path_d, search_d=search_d, logger=logger)
     logger.info(f"processing {len(index_gdf):,} chips from\n    {path_d['index_fp']}")
 
-    # Process one chip at a time for readability and simpler recovery.
+    # Process one chip at a time here; snakemake handles cross-chip concurrency.
     for i, (_, chip_s) in enumerate(index_gdf.iterrows(), start=1):
         chip_context = _2_prepare_chip_context(chip_s=chip_s, path_d=path_d, search_d=search_d)
         logger.info(f"[{i:,}/{len(index_gdf):,}] {chip_context['event']}/{chip_context['chip_id']}")
@@ -100,8 +100,8 @@ def _1_read_index(path_d, search_d, logger=None):
 
     if search_d["event"] is not None:
         index_gdf = index_gdf.loc[index_gdf["Event"] == search_d["event"]].copy()
-    if search_d["chip_id"] is not None:
-        index_gdf = index_gdf.loc[index_gdf["Chip_ID"] == search_d["chip_id"]].copy()
+    if search_d["chip_id_l"]:
+        index_gdf = index_gdf.loc[index_gdf["Chip_ID"].isin(search_d["chip_id_l"])].copy()
 
     assert not index_gdf.empty, "No chips remain after filtering"
     log.debug(f"filtered index has {len(index_gdf):,} rows")
@@ -154,19 +154,20 @@ async def _process_one_chip(chip_context, path_d, search_d, planet_d, run_d, log
             f"{chip_context['event']}/{chip_context['chip_id']}"
         )
 
-        # Download all eligible scenes sequentially for a readable first pass.
-        for _, row in eligible_df.iterrows():
-            result_d = await _6_order_and_download_candidate(
+        # Submit one order per chip so Planet handles the eligible scenes in bulk.
+        if not eligible_df.empty:
+            result_df = await _6_order_and_download_chip(
                 chip_context=chip_context,
-                row=row,
+                eligible_df=eligible_df,
                 path_d=path_d,
                 planet_d=planet_d,
                 run_d=run_d,
                 sess=sess,
                 logger=log,
             )
-            for key, value in result_d.items():
-                summary_df.loc[summary_df["item_id"] == row["item_id"], key] = value
+            for _, row in result_df.iterrows():
+                for key in ["order_submitted", "order_id", "order_state", "downloaded", "raster_fp", "manifest_fp", "note"]:
+                    summary_df.loc[summary_df["item_id"] == row["item_id"], key] = row[key]
 
     if summary_df.empty:
         summary_df = pd.DataFrame([{
@@ -269,34 +270,51 @@ def _5_filter_eligible_candidates(summary_df):
     return summary_df.loc[summary_df["eligible"]].copy().reset_index(drop=True)
 
 
-async def _6_order_and_download_candidate(chip_context, row, path_d, planet_d, run_d, sess, logger=None):
-    """Order one eligible candidate, move the raster into place, and write its manifest."""
+def _6_expected_item_outputs(chip_context, item_id):
+    """Return the expected output paths for one ordered item."""
+    return {
+        "raster_fp": chip_context["chip_dir"] / f"{item_id}.tif",
+        "manifest_fp": chip_context["chip_dir"] / f"{item_id}.manifest.json",
+    }
+
+
+async def _6_order_and_download_chip(chip_context, eligible_df, path_d, planet_d, run_d, sess, logger=None):
+    """Order all eligible scenes for one chip, then write per-item outputs."""
     log = logger or get_logger(__name__)
-    item_id = row["item_id"]
-    raster_fp = chip_context["chip_dir"] / f"{item_id}.tif"
-    manifest_fp = chip_context["chip_dir"] / f"{item_id}.manifest.json"
-    if raster_fp.exists() and manifest_fp.exists() and not run_d["overwrite"]:
-        return {
-            "order_submitted": False,
-            "order_id": None,
-            "order_state": "skipped_existing",
-            "downloaded": True,
-            "raster_fp": str(raster_fp),
-            "manifest_fp": str(manifest_fp),
-            "note": "existing_output",
-        }
+    assert not eligible_df.empty, "Expected at least one eligible scene"
+
+    result_l = []
+    pending_item_id_l = []
+    for _, row in eligible_df.iterrows():
+        output_d = _6_expected_item_outputs(chip_context=chip_context, item_id=row["item_id"])
+        if output_d["raster_fp"].exists() and output_d["manifest_fp"].exists() and not run_d["overwrite"]:
+            result_l.append({
+                "item_id": row["item_id"],
+                "order_submitted": False,
+                "order_id": None,
+                "order_state": "skipped_existing",
+                "downloaded": True,
+                "raster_fp": str(output_d["raster_fp"]),
+                "manifest_fp": str(output_d["manifest_fp"]),
+                "note": "existing_output",
+            })
+        else:
+            pending_item_id_l.append(row["item_id"])
+
+    if not pending_item_id_l:
+        return pd.DataFrame(result_l)
 
     # Stage raw order outputs under the chip directory before selecting the SR tif.
-    stage_dir = chip_context["chip_dir"] / "_staging" / item_id
+    stage_dir = chip_context["chip_dir"] / "_staging" / chip_context["chip_id"]
     if stage_dir.exists() and run_d["overwrite"]:
         shutil.rmtree(stage_dir)
     stage_dir.mkdir(parents=True, exist_ok=True)
 
     orders_client = sess.client("orders")
     request = order_request.build_request(
-        name=f"{chip_context['chip_id'].lower()}_{item_id}",
+        name=f"{chip_context['chip_id'].lower()}_batch",
         products=[order_request.product(
-            item_ids=[item_id],
+            item_ids=pending_item_id_l,
             product_bundle=planet_d["product_bundle"],
             item_type=planet_d["item_type"],
         )],
@@ -308,16 +326,19 @@ async def _6_order_and_download_candidate(chip_context, row, path_d, planet_d, r
 
     def _order_state_callback(state):
         """Log order state changes while waiting on Planet processing."""
-        log.info(f"order {order['id']} item={item_id} state={state}")
+        log.info(f"order {order['id']} chip={chip_context['chip_id']} state={state}")
 
     order_id = None
     order_state = None
     download_path_l = []
     try:
-        log.info(f"ordering {chip_context['event']}/{chip_context['chip_id']} item={item_id}")
+        log.info(
+            f"ordering {chip_context['event']}/{chip_context['chip_id']} "
+            f"with {len(pending_item_id_l):,} item(s)"
+        )
         order = await orders_client.create_order(request)
         order_id = order["id"]
-        log.info(f"submitted order {order_id} for item={item_id}")
+        log.info(f"submitted order {order_id} for chip={chip_context['chip_id']}")
         order_state = await orders_client.wait(
             order_id,
             delay=planet_d["poll_delay_seconds"],
@@ -330,71 +351,82 @@ async def _6_order_and_download_candidate(chip_context, row, path_d, planet_d, r
             overwrite=run_d["overwrite"],
             progress_bar=False,
         )
-        primary_raster_fp = _7_pick_primary_raster(item_id=item_id, download_path_l=download_path_l, stage_dir=stage_dir)
-        if raster_fp.exists() and run_d["overwrite"]:
-            raster_fp.unlink()
-        shutil.move(str(primary_raster_fp), str(raster_fp))
+        for _, row in eligible_df.loc[eligible_df["item_id"].isin(pending_item_id_l)].iterrows():
+            output_d = _6_expected_item_outputs(chip_context=chip_context, item_id=row["item_id"])
+            primary_raster_fp = _7_pick_primary_raster(
+                item_id=row["item_id"],
+                download_path_l=download_path_l,
+                stage_dir=stage_dir,
+            )
+            if output_d["raster_fp"].exists() and run_d["overwrite"]:
+                output_d["raster_fp"].unlink()
+            shutil.move(str(primary_raster_fp), str(output_d["raster_fp"]))
 
-        manifest_d = {
-            "event": chip_context["event"],
-            "chip_id": chip_context["chip_id"],
-            "item_id": item_id,
-            "acquired": row["acquired"],
-            "time_delta_hours": row["time_delta_hours"],
-            "instrument": row["instrument"],
-            "asset_key": planet_d["asset_key"],
-            "order_id": order_id,
-            "order_state": order_state,
-            "output_raster": str(raster_fp),
-            "chip_bbox_coverage_ratio": row["coverage_ratio"],
-            "covers_chip": bool(row["covers_chip"]),
-            "search_window_start": chip_context["start_dt"].isoformat(),
-            "search_window_end": chip_context["end_dt"].isoformat(),
-            "download_path_l": [str(Path(p)) for p in download_path_l],
-        }
-        _7_write_manifest(manifest_d=manifest_d, manifest_fp=manifest_fp)
+            manifest_d = {
+                "event": chip_context["event"],
+                "chip_id": chip_context["chip_id"],
+                "item_id": row["item_id"],
+                "acquired": row["acquired"],
+                "time_delta_hours": row["time_delta_hours"],
+                "instrument": row["instrument"],
+                "asset_key": planet_d["asset_key"],
+                "order_id": order_id,
+                "order_state": order_state,
+                "output_raster": str(output_d["raster_fp"]),
+                "chip_bbox_coverage_ratio": row["coverage_ratio"],
+                "covers_chip": bool(row["covers_chip"]),
+                "search_window_start": chip_context["start_dt"].isoformat(),
+                "search_window_end": chip_context["end_dt"].isoformat(),
+                "download_path_l": [str(Path(p)) for p in download_path_l],
+            }
+            _7_write_manifest(manifest_d=manifest_d, manifest_fp=output_d["manifest_fp"])
+            result_l.append({
+                "item_id": row["item_id"],
+                "order_submitted": True,
+                "order_id": order_id,
+                "order_state": order_state,
+                "downloaded": True,
+                "raster_fp": str(output_d["raster_fp"]),
+                "manifest_fp": str(output_d["manifest_fp"]),
+                "note": None,
+            })
         if stage_dir.exists():
             shutil.rmtree(stage_dir)
-
-        return {
-            "order_submitted": True,
-            "order_id": order_id,
-            "order_state": order_state,
-            "downloaded": True,
-            "raster_fp": str(raster_fp),
-            "manifest_fp": str(manifest_fp),
-            "note": None,
-        }
+        return pd.DataFrame(result_l)
     except Exception as err:
-        log.error(f"item failed {chip_context['event']}/{chip_context['chip_id']} item={item_id}: {err}")
-        manifest_d = {
-            "event": chip_context["event"],
-            "chip_id": chip_context["chip_id"],
-            "item_id": item_id,
-            "acquired": row["acquired"],
-            "time_delta_hours": row["time_delta_hours"],
-            "instrument": row["instrument"],
-            "asset_key": planet_d["asset_key"],
-            "order_id": order_id,
-            "order_state": order_state,
-            "output_raster": None,
-            "chip_bbox_coverage_ratio": row["coverage_ratio"],
-            "covers_chip": bool(row["covers_chip"]),
-            "search_window_start": chip_context["start_dt"].isoformat(),
-            "search_window_end": chip_context["end_dt"].isoformat(),
-            "download_path_l": [str(Path(p)) for p in download_path_l],
-            "note": str(err),
-        }
-        _7_write_manifest(manifest_d=manifest_d, manifest_fp=manifest_fp)
-        return {
-            "order_submitted": bool(order_id),
-            "order_id": order_id,
-            "order_state": order_state,
-            "downloaded": False,
-            "raster_fp": None,
-            "manifest_fp": str(manifest_fp),
-            "note": str(err),
-        }
+        log.error(f"chip order failed {chip_context['event']}/{chip_context['chip_id']}: {err}")
+        for _, row in eligible_df.loc[eligible_df["item_id"].isin(pending_item_id_l)].iterrows():
+            output_d = _6_expected_item_outputs(chip_context=chip_context, item_id=row["item_id"])
+            manifest_d = {
+                "event": chip_context["event"],
+                "chip_id": chip_context["chip_id"],
+                "item_id": row["item_id"],
+                "acquired": row["acquired"],
+                "time_delta_hours": row["time_delta_hours"],
+                "instrument": row["instrument"],
+                "asset_key": planet_d["asset_key"],
+                "order_id": order_id,
+                "order_state": order_state,
+                "output_raster": None,
+                "chip_bbox_coverage_ratio": row["coverage_ratio"],
+                "covers_chip": bool(row["covers_chip"]),
+                "search_window_start": chip_context["start_dt"].isoformat(),
+                "search_window_end": chip_context["end_dt"].isoformat(),
+                "download_path_l": [str(Path(p)) for p in download_path_l],
+                "note": str(err),
+            }
+            _7_write_manifest(manifest_d=manifest_d, manifest_fp=output_d["manifest_fp"])
+            result_l.append({
+                "item_id": row["item_id"],
+                "order_submitted": bool(order_id),
+                "order_id": order_id,
+                "order_state": order_state,
+                "downloaded": False,
+                "raster_fp": None,
+                "manifest_fp": str(output_d["manifest_fp"]),
+                "note": str(err),
+            })
+        return pd.DataFrame(result_l)
 
 
 def _7_pick_primary_raster(item_id, download_path_l, stage_dir):
@@ -428,7 +460,7 @@ def _parse_arguments():
     parser.add_argument("--index-fp", default="/workspace/stac_catalog.geojson")
     parser.add_argument("--out-dir", default="/_outputs")
     parser.add_argument("--event", default=None)
-    parser.add_argument("--chip-id", default=None)
+    parser.add_argument("--chip-id", nargs="+", default=None)
     parser.add_argument("--search-limit", type=int, default=50)
     parser.add_argument("--poll-delay-seconds", type=int, default=10)
     parser.add_argument("--poll-max-attempts", type=int, default=180)
@@ -436,8 +468,23 @@ def _parse_arguments():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
-    args = _parse_arguments()
+def _parse_id_values(value):
+    """Normalize chip or event selectors from CLI or snakemake config."""
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [v.strip() for v in value.split(",") if v.strip()]
+    value_l = []
+    for item in value:
+        value_l.extend(_parse_id_values(item))
+    return value_l
+
+
+def _run_from_cli(args):
+    """Build runtime dictionaries from CLI args and execute the workflow."""
+    chip_id_l = []
+    for value in args.chip_id or []:
+        chip_id_l.extend(_parse_id_values(value))
     path_d = {
         "index_fp": Path(args.index_fp),
         "out_dir": Path(args.out_dir),
@@ -447,7 +494,7 @@ if __name__ == "__main__":
 
     search_d = {
         "event": args.event,
-        "chip_id": args.chip_id,
+        "chip_id_l": chip_id_l,
         "search_limit": args.search_limit,
         "half_window_hours": 24,
     }
@@ -461,3 +508,36 @@ if __name__ == "__main__":
     }
     run_d = {"overwrite": args.overwrite}
     main_planet_sdk_orders_match_search_batch(path_d=path_d, search_d=search_d, planet_d=planet_d, run_d=run_d)
+
+
+def _run_from_snakemake(snakemake):
+    """Build runtime dictionaries from a snakemake script context."""
+    path_d = {
+        "index_fp": Path(snakemake.params.index_fp),
+        "out_dir": Path(snakemake.params.out_dir),
+    }
+    path_d["log_dir"] = path_d["out_dir"] / "logs"
+    path_d["log_fp"] = path_d["log_dir"] / f"planet_batch_fetch_{snakemake.wildcards.event}_{snakemake.wildcards.chip_id}.log"
+
+    search_d = {
+        "event": snakemake.wildcards.event,
+        "chip_id_l": [snakemake.wildcards.chip_id],
+        "search_limit": int(snakemake.params.search_limit),
+        "half_window_hours": 24,
+    }
+    planet_d = {
+        "item_type": "PSScene",
+        "asset_key": "ortho_analytic_4b_sr",
+        "product_bundle": "analytic_sr_udm2",
+        "file_format": "COG",
+        "poll_delay_seconds": int(snakemake.params.poll_delay_seconds),
+        "poll_max_attempts": int(snakemake.params.poll_max_attempts),
+    }
+    run_d = {"overwrite": bool(snakemake.params.overwrite)}
+    main_planet_sdk_orders_match_search_batch(path_d=path_d, search_d=search_d, planet_d=planet_d, run_d=run_d)
+
+
+if "snakemake" in globals():
+    _run_from_snakemake(snakemake)
+elif __name__ == "__main__":
+    _run_from_cli(_parse_arguments())

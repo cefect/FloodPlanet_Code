@@ -28,23 +28,32 @@ could do something skinnier.. but this should work fine.
 
 ## fetching PSScene tiles
 
-`planet_sdk_orders_match_search_batch.py` runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). It searches `PSScene` within `PS_datetime +/- 24h`, keeps only scenes with `ortho_analytic_4b_sr` that fully cover the chip, writes a per-chip `summary.csv`, and writes one manifest per ordered item. Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
+`planet_sdk_orders_match_search_batch.py` runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). It searches `PSScene` within `PS_datetime +/- 24h`, keeps only scenes with `ortho_analytic_4b_sr` that fully cover the chip, submits one Planet order per chip, writes a per-chip `summary.csv`, and writes one manifest per ordered item. Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
+
+The preferred entrypoint is the snakemake workflow in [`smk/snakefile`](/workspace/smk/snakefile). The config is in [`smk/config.yaml`](/workspace/smk/config.yaml), and `snakemake --config` accepts `chip_ids` and `event_ids` as comma-separated subsets.
 
 Run the full fetch like this:
 
 ```bash
 cd /workspace
-python fetch/PS/planet_sdk_orders_match_search_batch.py \
-    --index-fp /workspace/stac_catalog.geojson \
-    --out-dir /workspace/_outputs
+snakemake --snakefile smk/snakefile \
+    --profile smk/profiles/local
 ```
 
 Run one chip first to prove the setup:
 
 ```bash
 cd /workspace
-python fetch/PS/planet_sdk_orders_match_search_batch.py \
-    --index-fp /workspace/stac_catalog.geojson \
-    --out-dir /workspace/_outputs \
-    --chip-id COL_23_11
+snakemake --snakefile smk/snakefile \
+    --profile smk/profiles/local \
+    --config chip_ids=COL_23_11
+```
+
+Run a 10-chip smoke subset:
+
+```bash
+cd /workspace
+snakemake --snakefile smk/snakefile \
+    --profile smk/profiles/local \
+    --config chip_ids=TUL_5_11,BOL_1605,BGD_64_23,ESP_1900,COL_37_61,BOL_989,BOL_347,BOL_1525,USA_31_6,PRY_20_12
 ```

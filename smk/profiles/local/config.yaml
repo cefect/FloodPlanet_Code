@@ -1,0 +1,7 @@
+cores: 4
+jobs: 4
+printshellcmds: true
+rerun-incomplete: true
+latency-wait: 30
+keep-going: true
+show-failed-logs: true

@@ -1,0 +1,65 @@
+from pathlib import Path
+
+import geopandas as gpd
+
+
+SNAKEFILE_DIR = Path(workflow.basedir)
+configfile: str(SNAKEFILE_DIR / "config.yaml")
+
+
+def _parse_id_values(value):
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [v.strip() for v in value.split(",") if v.strip()]
+    value_l = []
+    for item in value:
+        value_l.extend(_parse_id_values(item))
+    return value_l
+
+
+def _parse_bool(value):
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+INDEX_FP = Path(config["index_fp"])
+OUT_DIR = Path(config["out_dir"])
+CHIP_ID_L = _parse_id_values(config.get("chip_ids", []))
+EVENT_ID_L = _parse_id_values(config.get("event_ids", []))
+
+index_gdf = gpd.read_file(INDEX_FP)[["Event", "Chip_ID"]].drop_duplicates().copy()
+if EVENT_ID_L:
+    index_gdf = index_gdf.loc[index_gdf["Event"].isin(EVENT_ID_L)].copy()
+if CHIP_ID_L:
+    index_gdf = index_gdf.loc[index_gdf["Chip_ID"].isin(CHIP_ID_L)].copy()
+assert not index_gdf.empty, "No chips selected from the snakemake config"
+
+target_d = index_gdf.sort_values(["Event", "Chip_ID"]).to_dict("list")
+summary_fp_l = expand(
+    str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv"),
+    zip,
+    event=target_d["Event"],
+    chip_id=target_d["Chip_ID"],
+)
+
+
+rule all:
+    input:
+        summary_fp_l
+    default_target: True
+
+
+rule fetch_ps_chip:
+    output:
+        summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv")
+    params:
+        index_fp=str(INDEX_FP),
+        out_dir=str(OUT_DIR),
+        search_limit=int(config["search_limit"]),
+        poll_delay_seconds=int(config["poll_delay_seconds"]),
+        poll_max_attempts=int(config["poll_max_attempts"]),
+        overwrite=_parse_bool(config.get("overwrite", False))
+    script:
+        "../fetch/PS/planet_sdk_orders_match_search_batch.py"

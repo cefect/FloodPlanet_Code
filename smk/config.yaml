@@ -1,0 +1,8 @@
+index_fp: /workspace/stac_catalog.geojson
+out_dir: /workspace/_outputs
+search_limit: 50
+poll_delay_seconds: 10
+poll_max_attempts: 180
+overwrite: false
+chip_ids: []
+event_ids: []
