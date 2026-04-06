@@ -21,12 +21,6 @@ def _parse_id_values(value):
     return value_l
 
 
-def _parse_bool(value):
-    if isinstance(value, bool):
-        return value
-    return str(value).strip().lower() in {"1", "true", "yes", "y"}
-
-
 INDEX_FP = Path(config["index_fp"])
 OUT_DIR = Path(config["out_dir"])
 TMPDIR = Path(tempfile.gettempdir())
@@ -49,6 +43,12 @@ assert not index_gdf.empty, "No chips selected from the snakemake config"
 logger.info(f"selected {len(index_gdf):,} chip(s) for this run")
 
 target_d = index_gdf.sort_values(["Event", "Chip_ID"]).to_dict("list")
+search_manifest_fp_l = expand(
+    str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json"),
+    zip,
+    event=target_d["Event"],
+    chip_id=target_d["Chip_ID"],
+)
 order_manifest_fp_l = expand(
     str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json"),
     zip,
@@ -75,17 +75,17 @@ rule all:
         concat_summary_fp
     default_target: True
 
-rule fetch_ps_chip_manifest_all:
+rule _1_fetch_ps_chip_manifest_all:
     input:
-        order_manifest_fp_l,
+        search_manifest_fp_l,
         search_summary_fp_l
 
-rule fetch_ps_chip_manifest:
+rule _1_fetch_ps_chip_manifest:
     output:
-        order_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json"),
+        search_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json"),
         search_summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_summary.tsv")
     log:
-        str(OUT_DIR / "{event}" / "{chip_id}" / "fetch_ps_chip_manifest.log")
+        str(OUT_DIR / "{event}" / "{chip_id}" / "_1_fetch_ps_chip_manifest.log")
     params:
         index_fp=str(INDEX_FP),
         out_dir=str(OUT_DIR),
@@ -95,19 +95,37 @@ rule fetch_ps_chip_manifest:
         upper_window_hours=int(config["upper_window_hours"]),
         poll_delay_seconds=int(config["poll_delay_seconds"]),
         poll_max_attempts=int(config["poll_max_attempts"]),
-        logging_level="DEBUG",
-        overwrite=_parse_bool(config.get("overwrite", False))
+        logging_level="DEBUG"
     script:
-        "scripts/fetch_ps_chip_manifest.py"
+        "scripts/_1_fetch_ps_chip_manifest.py"
 
 
-rule fetch_ps_chip_order:
+rule _2_build_chip_order_manifest:
+    input:
+        search_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json")
+    output:
+        order_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json")
+    log:
+        str(OUT_DIR / "{event}" / "{chip_id}" / "_2_build_chip_order_manifest.log")
+    params:
+        index_fp=str(INDEX_FP),
+        out_dir=str(OUT_DIR),
+        tmpdir=str(TMPDIR),
+        search_limit=int(config["search_limit"]),
+        lower_window_hours=int(config["lower_window_hours"]),
+        upper_window_hours=int(config["upper_window_hours"]),
+        logging_level="DEBUG"
+    script:
+        "scripts/_2_build_chip_order_manifest.py"
+
+
+rule _3_fetch_ps_chip_order:
     input:
         order_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json")
     output:
         summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv")
     log:
-        str(OUT_DIR / "{event}" / "{chip_id}" / "fetch_ps_chip_order.log")
+        str(OUT_DIR / "{event}" / "{chip_id}" / "_3_fetch_ps_chip_order.log")
     params:
         index_fp=str(INDEX_FP),
         out_dir=str(OUT_DIR),
@@ -117,13 +135,12 @@ rule fetch_ps_chip_order:
         upper_window_hours=int(config["upper_window_hours"]),
         poll_delay_seconds=int(config["poll_delay_seconds"]),
         poll_max_attempts=int(config["poll_max_attempts"]),
-        logging_level="DEBUG",
-        overwrite=_parse_bool(config.get("overwrite", False))
+        logging_level="DEBUG"
     script:
-        "scripts/fetch_ps_chip_order.py"
+        "scripts/_3_fetch_ps_chip_order.py"
 
 
-rule concat_chip_summaries:
+rule _4_concat_chip_summaries:
     input:
         summary_fp_l
     output:

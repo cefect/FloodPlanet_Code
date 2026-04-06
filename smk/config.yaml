@@ -6,6 +6,5 @@ upper_window_hours: 72
 poll_delay_seconds: 10
 poll_max_attempts: 180
 logging_level: WARNING
-overwrite: false
 chip_ids: []
 event_ids: []

@@ -29,13 +29,14 @@ could do something skinnier.. but this should work fine.
 
 ## fetching PSScene tiles
 
-`planet_sdk_orders_match_search_batch.py` runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). It searches `PSScene` within `PS_datetime +/- 24h`, keeps only scenes with `ortho_analytic_4b_sr` that fully cover the chip, submits one Planet order per chip, writes a per-chip `summary.csv`, and writes one manifest per ordered item. Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
+The snakemake workflow runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). The step-1 manifest phase inventories all `ortho_analytic_4b_sr` scenes intersecting each chip in the configured search window, step 2 builds one explicit per-chip order manifest, and step 3 submits one Planet order per chip for the single nearest-in-time scene with full chip coverage. Shared backend helpers live in [`smk/scripts/coms.py`](/workspace/smk/scripts/coms.py). Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
 
 The preferred entrypoint is the snakemake workflow in [`smk/snakefile`](/workspace/smk/snakefile). The config is in [`smk/config.yaml`](/workspace/smk/config.yaml), and `snakemake --config` accepts `chip_ids` and `event_ids` as comma-separated subsets.
 
 ```bash
 cd /workspace
 chip_ids="TUL_5_11,BOL_1605,BGD_64_23,ESP_1900,COL_37_61,BOL_989,BOL_347,BOL_1525,USA_31_6,PRY_20_12"
+proof_chip_ids="BGD_66_18,COL_33_67"
 event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
 
 # full fetch
@@ -43,6 +44,9 @@ snakemake --snakefile smk/snakefile --profile smk/profiles/local
 
 # one-chip proof
 snakemake --snakefile smk/snakefile --profile smk/profiles/local --config chip_ids=COL_23_11
+
+# two-chip proof
+snakemake --snakefile smk/snakefile --profile smk/profiles/local --config chip_ids="$proof_chip_ids"
 
 # 10-chip smoke subset
 snakemake --snakefile smk/snakefile --profile smk/profiles/local --config chip_ids="$chip_ids"
