@@ -119,6 +119,11 @@ rule _2_build_chip_order_manifest:
         "scripts/_2_build_chip_order_manifest.py"
 
 
+rule _2_build_chip_order_manifest_all:
+    input:
+        order_manifest_fp_l
+
+
 rule _3_fetch_ps_chip_order:
     input:
         order_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json")
@@ -138,6 +143,11 @@ rule _3_fetch_ps_chip_order:
         logging_level="DEBUG"
     script:
         "scripts/_3_fetch_ps_chip_order.py"
+
+
+rule _3_fetch_ps_chip_order_all:
+    input:
+        summary_fp_l
 
 
 rule _4_concat_chip_summaries:
@@ -171,3 +181,8 @@ rule _4_concat_chip_summaries:
         logger.info(f"event row counts:\n{event_count_s.to_string()}")
         logger.info(f"event eligible counts:\n{eligible_count_s.to_string()}")
         logger.info(f"event downloaded counts:\n{downloaded_count_s.to_string()}")
+
+
+rule _4_concat_chip_summaries_all:
+    input:
+        concat_summary_fp

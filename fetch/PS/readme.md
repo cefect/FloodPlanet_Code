@@ -35,22 +35,32 @@ The preferred entrypoint is the snakemake workflow in [`smk/snakefile`](/workspa
 
 ```bash
 cd /workspace
-chip_ids="TUL_5_11,BOL_1605,BGD_64_23,ESP_1900,COL_37_61,BOL_989,BOL_347,BOL_1525,USA_31_6,PRY_20_12"
-proof_chip_ids="BGD_66_18,COL_33_67"
+export SNAKEMAKE_PROFILE=/workspace/smk/profiles/local
 event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
 
-# full fetch
-snakemake --snakefile smk/snakefile --profile smk/profiles/local
-
 # one-chip proof
-snakemake --snakefile smk/snakefile --profile smk/profiles/local --config chip_ids=COL_23_11
-
-# two-chip proof
-snakemake --snakefile smk/snakefile --profile smk/profiles/local --config chip_ids="$proof_chip_ids"
-
-# 10-chip smoke subset
-snakemake --snakefile smk/snakefile --profile smk/profiles/local --config chip_ids="$chip_ids"
+snakemake --config chip_ids=COL_23_11
 
 # US event subset
-snakemake --snakefile smk/snakefile --profile smk/profiles/local --config event_ids="$event_ids"
+snakemake --config event_ids="$event_ids"
+```
+
+Invoke each step-specific `_all` target like this:
+
+```bash
+cd /workspace
+export SNAKEMAKE_PROFILE=/workspace/smk/profiles/local
+chip_ids="COL_23_11"
+
+# step 1: search manifests
+snakemake --config chip_ids="$chip_ids" _1_fetch_ps_chip_manifest_all
+
+# step 2: order manifests
+snakemake --config chip_ids="$chip_ids" _2_build_chip_order_manifest_all
+
+# step 3: orders and fetch
+snakemake --config chip_ids="$chip_ids" _3_fetch_ps_chip_order_all
+
+# step 4: combined summary
+snakemake --config chip_ids="$chip_ids" _4_concat_chip_summaries_all
 ```

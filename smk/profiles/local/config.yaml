@@ -1,3 +1,4 @@
+snakefile: /workspace/smk/snakefile
 cores: 4
 jobs: 4
 printshellcmds: true
