@@ -1,0 +1,33 @@
+{
+ 
+
+"files.exclude": {
+	"**/__pycache__": true,
+	"**/.pytest_cache": true,
+	"**/.pytest_tmp": true,
+	"docker_stderror": true,
+	"docker_stdout": true,
+	"**/*.tif.aux.xml": true,
+	"**/*.qmd": true,
+	//"mplstyles": true,
+	//"**/.snakemake": true,
+	"**/*.lnk": true,
+			},
+			
+"search.exclude": {
+	"**/__pycache__": true,
+	"**/.pytest_cache": true,
+	"**/env": true,
+	"**/.snakemake": true,
+	"workflow_outdir/": true,
+	"**/.pytest_tmp": true,
+	"**/*.tif.aux.xml": true,
+	"**/*.lnk": true,
+
+			},
+
+"jupyter.notebookFileRoot": "${workspaceFolder}",
+"python.terminal.executeInFileDir": false,
+
+ 
+}
