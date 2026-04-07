@@ -4,9 +4,14 @@ import asyncio, json, logging, os, shutil, sys, time
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
+import rasterio
 from planet import Session, data_filter, order_request
+from rasterio.enums import Resampling
+from rasterio.warp import reproject
 from shapely.geometry import mapping, shape
+from skimage import filters, metrics
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -34,7 +39,6 @@ def read_index(path_d, search_d, logger=None):
         log.debug(f"applied chip filter: {','.join(search_d['chip_id_l'])}")
 
     assert not index_gdf.empty, "No chips remain after filtering"
-    log.debug(f"filtered index has {len(index_gdf):,} rows")
     return index_gdf.reset_index(drop=True)
 
 
@@ -55,14 +59,14 @@ def prepare_chip_context(chip_s, path_d, search_d):
         "chip_dir": chip_dir,
         "stage_root": path_d["tmpdir"] / "planet_fetch_stage" / chip_s["Event"] / chip_s["Chip_ID"],
         "search_manifest_fp": chip_dir / "chip_search_manifest.json",
-        "order_manifest_fp": chip_dir / "chip_order_manifest.json",
         "search_summary_fp": chip_dir / "chip_search_summary.tsv",
+        "match_diagnostics_fp": chip_dir / "match_diagnostics.json",
         "summary_fp": chip_dir / "summary.csv",
     }
 
 
 def chip_context_from_manifest(manifest_d, path_d):
-    """Rebuild a chip context from a search or order manifest."""
+    """Rebuild a chip context from a manifest payload."""
     chip_context_d = manifest_d["chip_context"]
     chip_dir = path_d["out_dir"] / chip_context_d["event"] / chip_context_d["chip_id"]
     chip_dir.mkdir(parents=True, exist_ok=True)
@@ -76,8 +80,8 @@ def chip_context_from_manifest(manifest_d, path_d):
         "chip_dir": chip_dir,
         "stage_root": path_d["tmpdir"] / "planet_fetch_stage" / chip_context_d["event"] / chip_context_d["chip_id"],
         "search_manifest_fp": chip_dir / "chip_search_manifest.json",
-        "order_manifest_fp": chip_dir / "chip_order_manifest.json",
         "search_summary_fp": chip_dir / "chip_search_summary.tsv",
+        "match_diagnostics_fp": chip_dir / "match_diagnostics.json",
         "summary_fp": chip_dir / "summary.csv",
     }
 
@@ -143,9 +147,6 @@ def build_candidate_table(chip_context, item_l, asset_keys_by_item, planet_d):
             "has_target_asset": planet_d["asset_key"] in asset_keys_by_item.get(item["id"], []),
             "covers_chip": item_geom.buffer(1e-12).covers(chip_context["geometry"]),
             "coverage_ratio": round(coverage_ratio, 6) if coverage_ratio is not None else None,
-            "within_24h": abs((acquired - chip_context["reference_dt"]).total_seconds()) <= 24 * 3600.0,
-            "eligible": False,
-            "selected": False,
             "order_submitted": False,
             "order_id": None,
             "order_state": None,
@@ -155,10 +156,7 @@ def build_candidate_table(chip_context, item_l, asset_keys_by_item, planet_d):
             "note": None,
         })
 
-    summary_df = pd.DataFrame(row_l)
-    if not summary_df.empty:
-        summary_df["eligible"] = summary_df["has_target_asset"] & summary_df["covers_chip"]
-    return summary_df
+    return pd.DataFrame(row_l)
 
 
 def build_chip_search_summary(chip_context, summary_df):
@@ -172,7 +170,6 @@ def build_chip_search_summary(chip_context, summary_df):
             "search_window_end": chip_context["end_dt"].isoformat(),
             "n_returned": 0,
             "n_full_coverage": 0,
-            "n_within_24h": 0,
             "closest_time_delta_hours": None,
             "first_acquired": None,
             "last_acquired": None,
@@ -188,25 +185,13 @@ def build_chip_search_summary(chip_context, summary_df):
         "search_window_start": chip_context["start_dt"].isoformat(),
         "search_window_end": chip_context["end_dt"].isoformat(),
         "n_returned": int(len(summary_df)),
-        "n_full_coverage": int(summary_df["covers_chip"].sum()),
-        "n_within_24h": int(summary_df["within_24h"].sum()),
+        "n_full_coverage": int(summary_df["covers_chip"].fillna(False).sum()),
         "closest_time_delta_hours": float(summary_df["time_delta_hours"].min()),
         "first_acquired": str(summary_df["acquired"].min()),
         "last_acquired": str(summary_df["acquired"].max()),
         "sensor_values": ",".join(sensor_count_s.index.tolist()),
         "sensor_counts_json": json.dumps(sensor_count_s.to_dict(), sort_keys=True),
     }])
-
-
-def select_candidates(summary_df):
-    """Return the single nearest-in-time full-coverage candidate for fetch."""
-    if summary_df.empty:
-        return summary_df.copy()
-    summary_df["eligible"] = summary_df["has_target_asset"] & summary_df["covers_chip"]
-    selected_df = summary_df.loc[summary_df["eligible"]].copy().sort_values(["time_delta_hours", "item_id"]).head(1)
-    if not selected_df.empty:
-        summary_df.loc[summary_df["item_id"].isin(selected_df["item_id"]), "selected"] = True
-    return selected_df.reset_index(drop=True)
 
 
 def build_chip_search_manifest(chip_context, summary_df):
@@ -220,21 +205,6 @@ def build_chip_search_manifest(chip_context, summary_df):
             "search_window_start": chip_context["start_dt"].isoformat(),
             "search_window_end": chip_context["end_dt"].isoformat(),
         },
-        "summary_rows": summary_df.where(pd.notna(summary_df), None).to_dict("records"),
-    }
-
-
-def build_chip_order_manifest(search_manifest_d):
-    """Build one explicit per-chip order manifest from a raw search manifest."""
-    summary_df = pd.DataFrame(search_manifest_d.get("summary_rows", []))
-    selected_df = select_candidates(summary_df=summary_df.copy())
-    if not summary_df.empty:
-        summary_df["selected"] = summary_df["item_id"].isin(selected_df["item_id"]) if not selected_df.empty else False
-    return {
-        "chip_context": search_manifest_d["chip_context"],
-        "selection_method": "nearest_full_coverage",
-        "selected_item_id_l": selected_df["item_id"].tolist() if not selected_df.empty else [],
-        "selected_rows": selected_df.where(pd.notna(selected_df), None).to_dict("records"),
         "summary_rows": summary_df.where(pd.notna(summary_df), None).to_dict("records"),
     }
 
@@ -256,11 +226,20 @@ def write_chip_search_summary(chip_search_summary_df, chip_context, logger=None)
     log.info(f"wrote chip search summary to\n    {chip_context['search_summary_fp']}")
 
 
+def write_match_diagnostics(match_diagnostics_d, chip_context, logger=None):
+    """Write the per-chip match diagnostics JSON."""
+    log = logger or logging.getLogger(__name__)
+    write_manifest(manifest_d=match_diagnostics_d, manifest_fp=chip_context["match_diagnostics_fp"])
+    log.info(f"wrote match diagnostics to\n    {chip_context['match_diagnostics_fp']}")
+
+
 def write_chip_summary(summary_df, chip_context, logger=None):
     """Write the per-chip summary table to CSV."""
     log = logger or logging.getLogger(__name__)
     summary_df.to_csv(chip_context["summary_fp"], index=False)
-    mtime = max(time.time(), chip_context["order_manifest_fp"].stat().st_mtime + 0.01)
+    dep_fp_l = [chip_context["search_manifest_fp"], chip_context["match_diagnostics_fp"]]
+    dep_mtime = max([fp.stat().st_mtime for fp in dep_fp_l if fp.exists()] + [time.time()])
+    mtime = max(time.time(), dep_mtime + 0.01)
     os.utime(chip_context["summary_fp"], (mtime, mtime))
     log.info(f"wrote chip summary to\n    {chip_context['summary_fp']}")
 
@@ -287,7 +266,7 @@ def pick_primary_raster(item_id, download_path_l, stage_dir):
 
 
 async def order_and_download_chip(chip_context, selected_df, planet_d, logger=None):
-    """Order the selected scene for one chip, then write per-item outputs."""
+    """Order the selected scenes for one chip, then write per-item outputs."""
     log = logger or logging.getLogger(__name__)
     assert not selected_df.empty, "Expected at least one selected scene"
 
@@ -308,15 +287,14 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                     "order_id": None,
                     "order_state": "skipped_existing",
                     "output_raster": str(output_d["raster_fp"]),
-                    "chip_bbox_coverage_ratio": row["coverage_ratio"],
-                    "covers_chip": bool(row["covers_chip"]),
+                    "chip_bbox_coverage_ratio": row.get("coverage_ratio"),
+                    "covers_chip": bool(row.get("covers_chip", False)),
                     "search_window_start": chip_context["start_dt"].isoformat(),
                     "search_window_end": chip_context["end_dt"].isoformat(),
                     "download_path_l": [],
                     "note": "existing_raster",
                 }
                 write_manifest(manifest_d=manifest_d, manifest_fp=output_d["manifest_fp"])
-                log.debug(f"wrote existing-raster manifest to\n    {output_d['manifest_fp']}")
             result_l.append({
                 "item_id": row["item_id"],
                 "order_submitted": False,
@@ -331,7 +309,7 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
             pending_item_id_l.append(row["item_id"])
 
     if not pending_item_id_l:
-        log.debug(f"all eligible items already exist for {chip_context['chip_id']}")
+        log.debug(f"all requested items already exist for {chip_context['chip_id']}")
         return pd.DataFrame(result_l)
 
     stage_dir = chip_context["stage_root"]
@@ -354,10 +332,6 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
             ],
         )
 
-        def _order_state_callback(state):
-            """Log order state changes while waiting on Planet processing."""
-            log.info(f"order {order['id']} chip={chip_context['chip_id']} state={state}")
-
         order_id = None
         order_state = None
         download_path_l = []
@@ -371,16 +345,14 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                 order_id,
                 delay=planet_d["poll_delay_seconds"],
                 max_attempts=planet_d["poll_max_attempts"],
-                callback=_order_state_callback,
+                callback=lambda state: log.info(f"order {order_id} chip={chip_context['chip_id']} state={state}"),
             )
             download_path_l = await orders_client.download_order(order_id, stage_dir, overwrite=False, progress_bar=False)
             log.debug(f"downloaded {len(download_path_l):,} files into\n    {stage_dir}")
             for _, row in selected_df.loc[selected_df["item_id"].isin(pending_item_id_l)].iterrows():
                 output_d = expected_item_outputs(chip_context=chip_context, item_id=row["item_id"])
                 primary_raster_fp = pick_primary_raster(item_id=row["item_id"], download_path_l=download_path_l, stage_dir=stage_dir)
-                log.debug(f"selected raster for {row['item_id']}:\n    {primary_raster_fp}")
                 shutil.move(str(primary_raster_fp), str(output_d["raster_fp"]))
-                log.debug(f"moved raster to\n    {output_d['raster_fp']}")
 
                 item_manifest_d = {
                     "event": chip_context["event"],
@@ -393,14 +365,13 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                     "order_id": order_id,
                     "order_state": order_state,
                     "output_raster": str(output_d["raster_fp"]),
-                    "chip_bbox_coverage_ratio": row["coverage_ratio"],
-                    "covers_chip": bool(row["covers_chip"]),
+                    "chip_bbox_coverage_ratio": row.get("coverage_ratio"),
+                    "covers_chip": bool(row.get("covers_chip", False)),
                     "search_window_start": chip_context["start_dt"].isoformat(),
                     "search_window_end": chip_context["end_dt"].isoformat(),
                     "download_path_l": [str(Path(p)) for p in download_path_l],
                 }
                 write_manifest(manifest_d=item_manifest_d, manifest_fp=output_d["manifest_fp"])
-                log.debug(f"wrote manifest to\n    {output_d['manifest_fp']}")
                 result_l.append({
                     "item_id": row["item_id"],
                     "order_submitted": True,
@@ -429,15 +400,14 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                     "order_id": order_id,
                     "order_state": order_state,
                     "output_raster": None,
-                    "chip_bbox_coverage_ratio": row["coverage_ratio"],
-                    "covers_chip": bool(row["covers_chip"]),
+                    "chip_bbox_coverage_ratio": row.get("coverage_ratio"),
+                    "covers_chip": bool(row.get("covers_chip", False)),
                     "search_window_start": chip_context["start_dt"].isoformat(),
                     "search_window_end": chip_context["end_dt"].isoformat(),
                     "download_path_l": [str(Path(p)) for p in download_path_l],
                     "note": str(err),
                 }
                 write_manifest(manifest_d=item_manifest_d, manifest_fp=output_d["manifest_fp"])
-                log.debug(f"wrote failure manifest to\n    {output_d['manifest_fp']}")
                 result_l.append({
                     "item_id": row["item_id"],
                     "order_submitted": bool(order_id),
@@ -449,6 +419,260 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                     "note": str(err),
                 })
             return pd.DataFrame(result_l)
+
+
+def resolve_reference_fp(chip_context, path_d):
+    """Resolve the original FloodPlanet PS tile for one chip."""
+    reference_fp = path_d["floodplanet_root"] / chip_context["event"] / "PS" / f"{chip_context['chip_id']}.tif"
+    assert reference_fp.exists(), f"Missing FloodPlanet PS reference tile: {reference_fp}"
+    return reference_fp
+
+
+def rank_fetch_match_candidates(summary_df, search_d):
+    """Rank the raw search manifest rows for the fetch-match loop."""
+    if summary_df.empty:
+        return summary_df.copy()
+    candidate_df = summary_df.loc[
+        summary_df["has_target_asset"].fillna(False) & summary_df["covers_chip"].fillna(False)
+    ].copy()
+    if candidate_df.empty:
+        return candidate_df
+    candidate_df = candidate_df.sort_values(
+        ["time_delta_hours", "acquired", "item_id"],
+        kind="stable",
+    ).head(int(search_d["chip_search_max"])).reset_index(drop=True)
+    candidate_df["match_candidate_rank"] = np.arange(1, len(candidate_df) + 1)
+    return candidate_df
+
+
+def compare_candidate_to_reference(candidate_fp, reference_fp, compare_d, logger=None):
+    """Warp one fetched candidate to the reference grid and compute quadrant match metrics."""
+    log = logger or logging.getLogger(__name__)
+    candidate_fp = Path(candidate_fp)
+    reference_fp = Path(reference_fp)
+    assert candidate_fp.exists(), candidate_fp
+    assert reference_fp.exists(), reference_fp
+
+    with rasterio.open(reference_fp) as ref_ds, rasterio.open(candidate_fp) as cand_ds:
+        band_count = min(ref_ds.count, cand_ds.count, 4)
+        assert band_count > 0, f"No comparable bands for {candidate_fp}"
+        ref_arr = ref_ds.read(indexes=list(range(1, band_count + 1)), masked=True).astype("float32").filled(np.nan)
+        cand_arr = np.full((band_count, ref_ds.height, ref_ds.width), np.nan, dtype="float32")
+        resampling = getattr(Resampling, str(compare_d["resampling"]).lower())
+
+        # Warp the candidate directly onto the FloodPlanet grid.
+        for band_i in range(band_count):
+            src_arr = cand_ds.read(band_i + 1, masked=True).astype("float32").filled(np.nan)
+            reproject(
+                source=src_arr,
+                destination=cand_arr[band_i],
+                src_transform=cand_ds.transform,
+                src_crs=cand_ds.crs,
+                src_nodata=np.nan,
+                dst_transform=ref_ds.transform,
+                dst_crs=ref_ds.crs,
+                dst_nodata=np.nan,
+                resampling=resampling,
+            )
+
+    ref_norm = np.full_like(ref_arr, np.nan)
+    cand_norm = np.full_like(ref_arr, np.nan)
+    for band_i in range(band_count):
+        ref_valid = np.isfinite(ref_arr[band_i])
+        cand_valid = np.isfinite(cand_arr[band_i])
+        if ref_valid.sum() < 100 or cand_valid.sum() < 100:
+            continue
+        ref_low_q = np.nanpercentile(ref_arr[band_i][ref_valid], compare_d["percentile_low"])
+        ref_high_q = np.nanpercentile(ref_arr[band_i][ref_valid], compare_d["percentile_high"])
+        cand_low_q = np.nanpercentile(cand_arr[band_i][cand_valid], compare_d["percentile_low"])
+        cand_high_q = np.nanpercentile(cand_arr[band_i][cand_valid], compare_d["percentile_high"])
+        if (
+            not np.isfinite(ref_low_q) or not np.isfinite(ref_high_q) or ref_high_q <= ref_low_q
+            or not np.isfinite(cand_low_q) or not np.isfinite(cand_high_q) or cand_high_q <= cand_low_q
+        ):
+            continue
+        ref_band = np.clip(ref_arr[band_i], ref_low_q, ref_high_q)
+        cand_band = np.clip(cand_arr[band_i], cand_low_q, cand_high_q)
+        ref_norm[band_i] = ((ref_band - ref_low_q) / (ref_high_q - ref_low_q)) * 255.0
+        cand_norm[band_i] = ((cand_band - cand_low_q) / (cand_high_q - cand_low_q)) * 255.0
+
+    valid_mask = np.all(np.isfinite(ref_norm), axis=0) & np.all(np.isfinite(cand_norm), axis=0)
+    valid_pixel_fraction = float(valid_mask.mean())
+    height, width = valid_mask.shape
+    quad_n = int(compare_d["quadrants"])
+    row_edge_l = np.linspace(0, height, quad_n + 1, dtype=int)
+    col_edge_l = np.linspace(0, width, quad_n + 1, dtype=int)
+
+    ref_edge = np.nanmean(np.stack([filters.sobel(np.nan_to_num(ref_norm[i], nan=0.0)) for i in range(band_count)]), axis=0)
+    cand_edge = np.nanmean(np.stack([filters.sobel(np.nan_to_num(cand_norm[i], nan=0.0)) for i in range(band_count)]), axis=0)
+    edge_scale = max(float(np.nanmax(ref_edge)), float(np.nanmax(cand_edge)), 1e-6)
+    ref_edge = ref_edge / edge_scale
+    cand_edge = cand_edge / edge_scale
+
+    quadrant_l = []
+    for row_i in range(quad_n):
+        for col_i in range(quad_n):
+            rs = slice(row_edge_l[row_i], row_edge_l[row_i + 1])
+            cs = slice(col_edge_l[col_i], col_edge_l[col_i + 1])
+            quad_valid = valid_mask[rs, cs]
+            valid_fraction = float(quad_valid.mean())
+            quad_d = {
+                "quadrant": f"r{row_i}c{col_i}",
+                "valid_fraction": valid_fraction,
+                "valid": valid_fraction >= compare_d["min_valid_fraction"],
+                "edge_corr": None,
+                "edge_ssim": None,
+            }
+            if quad_d["valid"]:
+                ref_q = ref_edge[rs, cs]
+                cand_q = cand_edge[rs, cs]
+                ref_v = ref_q[quad_valid]
+                cand_v = cand_q[quad_valid]
+                if ref_v.size > 10 and np.nanstd(ref_v) > 0 and np.nanstd(cand_v) > 0:
+                    quad_d["edge_corr"] = float(np.corrcoef(ref_v, cand_v)[0, 1])
+                ref_fill = np.where(quad_valid, ref_q, 0.0)
+                cand_fill = np.where(quad_valid, cand_q, 0.0)
+                quad_d["edge_ssim"] = float(metrics.structural_similarity(ref_fill, cand_fill, data_range=1.0))
+            quadrant_l.append(quad_d)
+
+    band_metric_l = []
+    for band_i in range(band_count):
+        band_valid = np.isfinite(ref_norm[band_i]) & np.isfinite(cand_norm[band_i])
+        band_d = {"band": band_i + 1, "corr": None, "mae": None}
+        if band_valid.sum() > 10:
+            ref_v = ref_norm[band_i][band_valid]
+            cand_v = cand_norm[band_i][band_valid]
+            if np.nanstd(ref_v) > 0 and np.nanstd(cand_v) > 0:
+                band_d["corr"] = float(np.corrcoef(ref_v, cand_v)[0, 1])
+            band_d["mae"] = float(np.mean(np.abs(ref_v - cand_v)))
+        band_metric_l.append(band_d)
+
+    quad_df = pd.DataFrame(quadrant_l)
+    band_df = pd.DataFrame(band_metric_l)
+    valid_quad_df = quad_df.loc[quad_df["valid"]].copy()
+    metric_d = {
+        "band_count": int(band_count),
+        "valid_pixel_fraction": valid_pixel_fraction,
+        "quadrants_requested": int(quad_n * quad_n),
+        "quadrants_valid": int(valid_quad_df["valid"].sum()) if not valid_quad_df.empty else 0,
+        "match_mean_quad_corr": float(valid_quad_df["edge_corr"].mean()) if not valid_quad_df.empty else None,
+        "match_min_quad_corr": float(valid_quad_df["edge_corr"].min()) if not valid_quad_df.empty else None,
+        "match_mean_quad_ssim": float(valid_quad_df["edge_ssim"].mean()) if not valid_quad_df.empty else None,
+        "match_mean_corr": float(band_df["corr"].dropna().mean()) if band_df["corr"].notna().any() else None,
+        "match_mean_mae": float(band_df["mae"].dropna().mean()) if band_df["mae"].notna().any() else None,
+        "quadrant_metrics": quadrant_l,
+        "band_metrics": band_metric_l,
+    }
+    metric_d["matched"] = bool(
+        metric_d["quadrants_valid"] == metric_d["quadrants_requested"]
+        and metric_d["match_mean_quad_corr"] is not None
+        and metric_d["match_min_quad_corr"] is not None
+        and metric_d["match_mean_quad_ssim"] is not None
+        and metric_d["match_mean_mae"] is not None
+        and metric_d["match_mean_quad_corr"] >= compare_d["match_mean_quad_corr_min"]
+        and metric_d["match_min_quad_corr"] >= compare_d["match_min_quad_corr_min"]
+        and metric_d["match_mean_quad_ssim"] >= compare_d["match_mean_quad_ssim_min"]
+        and metric_d["match_mean_mae"] <= compare_d["match_mean_mae_max"]
+    )
+    log.debug(
+        f"compare {candidate_fp.stem}: matched={metric_d['matched']} "
+        f"quad_corr={metric_d['match_mean_quad_corr']} quad_ssim={metric_d['match_mean_quad_ssim']} "
+        f"mae={metric_d['match_mean_mae']}"
+    )
+    return metric_d
+
+
+def update_item_manifest_compare(manifest_fp, compare_result_d, matched):
+    """Append comparison metrics to one per-item manifest."""
+    manifest_d = read_manifest(manifest_fp=manifest_fp)
+    manifest_d["compare_metrics"] = compare_result_d
+    manifest_d["matched_candidate"] = bool(matched)
+    write_manifest(manifest_d=manifest_d, manifest_fp=manifest_fp)
+
+
+def build_fetch_match_diagnostics(chip_context, reference_fp, summary_df, ranked_df, attempt_l, compare_d, runtime_seconds):
+    """Build the per-chip fetch-match diagnostics payload."""
+    return {
+        "chip_context": {
+            "event": chip_context["event"],
+            "chip_id": chip_context["chip_id"],
+            "reference_datetime": chip_context["reference_dt"].isoformat(),
+            "search_window_start": chip_context["start_dt"].isoformat(),
+            "search_window_end": chip_context["end_dt"].isoformat(),
+        },
+        "reference_fp": str(reference_fp),
+        "search_candidate_count": int(len(summary_df)),
+        "ranked_candidate_count": int(len(ranked_df)),
+        "compare_parameters": compare_d,
+        "runtime_seconds": round(float(runtime_seconds), 3),
+        "attempts": attempt_l,
+    }
+
+
+def build_fetch_match_summary(chip_context, reference_fp, summary_df, attempt_l, runtime_seconds):
+    """Build the one-row per-chip summary table for the fetch-match stage."""
+    best_attempt_d = None
+    compared_attempt_l = [d for d in attempt_l if d.get("compare_metrics") is not None]
+    matched_attempt_l = [d for d in compared_attempt_l if d["compare_metrics"].get("matched", False)]
+    if matched_attempt_l:
+        best_attempt_d = matched_attempt_l[0]
+    elif compared_attempt_l:
+        best_attempt_d = sorted(
+            compared_attempt_l,
+            key=lambda d: (
+                -(d["compare_metrics"].get("match_mean_quad_corr") or -999.0),
+                -(d["compare_metrics"].get("match_mean_quad_ssim") or -999.0),
+                d["compare_metrics"].get("match_mean_mae") or 999999.0,
+            ),
+        )[0]
+
+    row_d = {
+        "event": chip_context["event"],
+        "chip_id": chip_context["chip_id"],
+        "reference_fp": str(reference_fp),
+        "search_candidates": int(len(summary_df)),
+        "search_candidates_with_asset": int(summary_df["has_target_asset"].fillna(False).sum()) if not summary_df.empty else 0,
+        "search_candidates_full_coverage": int((summary_df["has_target_asset"].fillna(False) & summary_df["covers_chip"].fillna(False)).sum()) if not summary_df.empty else 0,
+        "attempted_candidates": int(len(attempt_l)),
+        "matched": bool(best_attempt_d is not None and best_attempt_d["compare_metrics"].get("matched", False)),
+        "matched_item_id": None,
+        "matched_acquired": None,
+        "matched_sensor": None,
+        "matched_time_delta_hours": None,
+        "match_rank": None,
+        "match_mean_quad_corr": None,
+        "match_min_quad_corr": None,
+        "match_mean_quad_ssim": None,
+        "match_mean_corr": None,
+        "match_mean_mae": None,
+        "best_item_id": None,
+        "best_mean_quad_corr": None,
+        "best_mean_quad_ssim": None,
+        "best_mean_mae": None,
+        "runtime_seconds": round(float(runtime_seconds), 3),
+    }
+    if best_attempt_d is not None:
+        metric_d = best_attempt_d["compare_metrics"]
+        row_d.update({
+            "best_item_id": best_attempt_d["item_id"],
+            "best_mean_quad_corr": metric_d.get("match_mean_quad_corr"),
+            "best_mean_quad_ssim": metric_d.get("match_mean_quad_ssim"),
+            "best_mean_mae": metric_d.get("match_mean_mae"),
+        })
+        if metric_d.get("matched", False):
+            row_d.update({
+                "matched_item_id": best_attempt_d["item_id"],
+                "matched_acquired": best_attempt_d["acquired"],
+                "matched_sensor": best_attempt_d["instrument"],
+                "matched_time_delta_hours": best_attempt_d["time_delta_hours"],
+                "match_rank": best_attempt_d["match_candidate_rank"],
+                "match_mean_quad_corr": metric_d.get("match_mean_quad_corr"),
+                "match_min_quad_corr": metric_d.get("match_min_quad_corr"),
+                "match_mean_quad_ssim": metric_d.get("match_mean_quad_ssim"),
+                "match_mean_corr": metric_d.get("match_mean_corr"),
+                "match_mean_mae": metric_d.get("match_mean_mae"),
+            })
+    return pd.DataFrame([row_d])
 
 
 def build_logger(path_d, level):

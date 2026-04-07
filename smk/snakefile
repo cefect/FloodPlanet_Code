@@ -49,14 +49,14 @@ search_manifest_fp_l = expand(
     event=target_d["Event"],
     chip_id=target_d["Chip_ID"],
 )
-order_manifest_fp_l = expand(
-    str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json"),
+search_summary_fp_l = expand(
+    str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_summary.tsv"),
     zip,
     event=target_d["Event"],
     chip_id=target_d["Chip_ID"],
 )
-search_summary_fp_l = expand(
-    str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_summary.tsv"),
+match_diagnostics_fp_l = expand(
+    str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json"),
     zip,
     event=target_d["Event"],
     chip_id=target_d["Chip_ID"],
@@ -75,10 +75,12 @@ rule all:
         concat_summary_fp
     default_target: True
 
+
 rule _1_fetch_ps_chip_manifest_all:
     input:
         search_manifest_fp_l,
         search_summary_fp_l
+
 
 rule _1_fetch_ps_chip_manifest:
     output:
@@ -100,57 +102,47 @@ rule _1_fetch_ps_chip_manifest:
         "scripts/_1_fetch_ps_chip_manifest.py"
 
 
-rule _2_build_chip_order_manifest:
+rule _2_fetch_match_all:
+    input:
+        summary_fp_l,
+        match_diagnostics_fp_l
+
+
+rule _2_fetch_match:
     input:
         search_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json")
     output:
-        order_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json")
+        summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv"),
+        match_diagnostics_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json")
     log:
-        str(OUT_DIR / "{event}" / "{chip_id}" / "_2_build_chip_order_manifest.log")
+        str(OUT_DIR / "{event}" / "{chip_id}" / "_2_fetch_match.log")
     params:
         index_fp=str(INDEX_FP),
         out_dir=str(OUT_DIR),
         tmpdir=str(TMPDIR),
-        search_limit=int(config["search_limit"]),
-        lower_window_hours=int(config["lower_window_hours"]),
-        upper_window_hours=int(config["upper_window_hours"]),
-        logging_level="DEBUG"
-    script:
-        "scripts/_2_build_chip_order_manifest.py"
-
-
-rule _2_build_chip_order_manifest_all:
-    input:
-        order_manifest_fp_l
-
-
-rule _3_fetch_ps_chip_order:
-    input:
-        order_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_order_manifest.json")
-    output:
-        summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv")
-    log:
-        str(OUT_DIR / "{event}" / "{chip_id}" / "_3_fetch_ps_chip_order.log")
-    params:
-        index_fp=str(INDEX_FP),
-        out_dir=str(OUT_DIR),
-        tmpdir=str(TMPDIR),
+        floodplanet_root=str(config["floodplanet_root"]),
+        chip_search_max=int(config["chip_search_max"]),
         search_limit=int(config["search_limit"]),
         lower_window_hours=int(config["lower_window_hours"]),
         upper_window_hours=int(config["upper_window_hours"]),
         poll_delay_seconds=int(config["poll_delay_seconds"]),
         poll_max_attempts=int(config["poll_max_attempts"]),
+        compare_percentile_low=float(config["compare_percentile_low"]),
+        compare_percentile_high=float(config["compare_percentile_high"]),
+        compare_quadrants=int(config["compare_quadrants"]),
+        compare_min_valid_fraction=float(config["compare_min_valid_fraction"]),
+        match_mean_quad_corr_min=float(config["match_mean_quad_corr_min"]),
+        match_min_quad_corr_min=float(config["match_min_quad_corr_min"]),
+        match_mean_quad_ssim_min=float(config["match_mean_quad_ssim_min"]),
+        match_mean_mae_max=float(config["match_mean_mae_max"]),
+        compare_resampling=str(config["compare_resampling"]),
+        write_compare_debug=bool(config["write_compare_debug"]),
         logging_level="DEBUG"
     script:
-        "scripts/_3_fetch_ps_chip_order.py"
+        "scripts/_2_fetch_match.py"
 
 
-rule _3_fetch_ps_chip_order_all:
-    input:
-        summary_fp_l
-
-
-rule _4_concat_chip_summaries:
+rule _3_concat_chip_summaries:
     input:
         summary_fp_l
     output:
@@ -161,28 +153,27 @@ rule _4_concat_chip_summaries:
         summary_df = pd.concat([pd.read_csv(fp) for fp in input], ignore_index=True)
         summary_df.to_csv(output[0], index=False)
 
-        # Log a short grouped count summary for the combined chip table.
         event_count_s = summary_df.groupby("event").size().sort_values(ascending=False)
-        eligible_count_s = summary_df.groupby("event")["eligible"].sum(min_count=1).sort_values(ascending=False)
-        downloaded_count_s = summary_df.groupby("event")["downloaded"].sum(min_count=1).sort_values(ascending=False)
+        matched_count_s = summary_df.groupby("event")["matched"].sum(min_count=1).sort_values(ascending=False)
+        attempted_count_s = summary_df.groupby("event")["attempted_candidates"].sum(min_count=1).sort_values(ascending=False)
 
         with open(log[0], "w") as f:
             f.write(f"wrote combined summary to {output[0]}\n")
             f.write(f"rows={len(summary_df):,}\n")
             f.write("event_row_counts:\n")
             f.write(event_count_s.to_string())
-            f.write("\n\nevent_eligible_counts:\n")
-            f.write(eligible_count_s.to_string())
-            f.write("\n\nevent_downloaded_counts:\n")
-            f.write(downloaded_count_s.to_string())
+            f.write("\n\nevent_matched_counts:\n")
+            f.write(matched_count_s.to_string())
+            f.write("\n\nevent_attempted_counts:\n")
+            f.write(attempted_count_s.to_string())
             f.write("\n")
 
         logger.info(f"wrote combined summary to {output[0]}")
         logger.info(f"event row counts:\n{event_count_s.to_string()}")
-        logger.info(f"event eligible counts:\n{eligible_count_s.to_string()}")
-        logger.info(f"event downloaded counts:\n{downloaded_count_s.to_string()}")
+        logger.info(f"event matched counts:\n{matched_count_s.to_string()}")
+        logger.info(f"event attempted counts:\n{attempted_count_s.to_string()}")
 
 
-rule _4_concat_chip_summaries_all:
+rule _3_concat_chip_summaries_all:
     input:
         concat_summary_fp

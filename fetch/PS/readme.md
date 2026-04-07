@@ -29,7 +29,7 @@ could do something skinnier.. but this should work fine.
 
 ## fetching PSScene tiles
 
-The snakemake workflow runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). The step-1 manifest phase inventories all `ortho_analytic_4b_sr` scenes intersecting each chip in the configured search window, step 2 builds one explicit per-chip order manifest, and step 3 submits one Planet order per chip for the single nearest-in-time scene with full chip coverage. Shared backend helpers live in [`smk/scripts/coms.py`](/workspace/smk/scripts/coms.py). Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
+The snakemake workflow runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). The step-1 manifest phase inventories all `ortho_analytic_4b_sr` scenes intersecting each chip in the configured search window, and step 2 loops through the ranked full-coverage candidates until one fetched tile matches the original FloodPlanet PS chip. Step 3 concatenates the chip summaries. Shared backend helpers live in [`smk/scripts/coms.py`](/workspace/smk/scripts/coms.py). Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
 
 The preferred entrypoint is the snakemake workflow in [`smk/snakefile`](/workspace/smk/snakefile). The config is in [`smk/config.yaml`](/workspace/smk/config.yaml), and `snakemake --config` accepts `chip_ids` and `event_ids` as comma-separated subsets.
 
@@ -55,12 +55,9 @@ chip_ids="COL_23_11"
 # step 1: search manifests
 snakemake --config chip_ids="$chip_ids" _1_fetch_ps_chip_manifest_all
 
-# step 2: order manifests
-snakemake --config chip_ids="$chip_ids" _2_build_chip_order_manifest_all
+# step 2: fetch and match
+snakemake --config chip_ids="$chip_ids" _2_fetch_match_all
 
-# step 3: orders and fetch
-snakemake --config chip_ids="$chip_ids" _3_fetch_ps_chip_order_all
-
-# step 4: combined summary
-snakemake --config chip_ids="$chip_ids" _4_concat_chip_summaries_all
+# step 3: combined summary
+snakemake --config chip_ids="$chip_ids" _3_concat_chip_summaries_all
 ```
