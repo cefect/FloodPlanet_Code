@@ -61,3 +61,9 @@ snakemake --config chip_ids="$chip_ids" _2_fetch_match_all
 # step 3: combined summary
 snakemake --config chip_ids="$chip_ids" _3_concat_chip_summaries_all
 ```
+
+
+## results notebook
+```bash
+conda run -n analysis jupyter nbconvert --to notebook --execute --inplace /workspace/fetch/PS/smk_match_summary.ipynb
+```
