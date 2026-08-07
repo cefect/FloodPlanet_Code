@@ -1,0 +1,3438 @@
+{
+  "generated_from": "/workspace/_outputs",
+  "record_count": 33,
+  "records": [
+    {
+      "event": "US-Alabama",
+      "chip_id": "NAL_14_30",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Alabama/PS/NAL_14_30.tif",
+      "reference_capture_timestamp": "2019-05-25T16:10:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Alabama/NAL_14_30/20190525_161148_100a.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Alabama/NAL_14_30/20190525_161148_100a.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Alabama/NAL_14_30/match_diagnostics.json",
+      "item_id": "20190525_161148_100a",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-25T16:11:48.336175+00:00",
+      "timedelta_hours": 0.03,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9998331069946289,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9600643550600046,
+        "match_min_quad_corr": 0.9525891835410518,
+        "match_mean_quad_ssim": 0.9210826233940332,
+        "match_mean_corr": 0.9945699028270444,
+        "match_mean_mae": 3.2956026792526245,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9993820190429688,
+            "valid": true,
+            "edge_corr": 0.9579258093279976,
+            "edge_ssim": 0.9232508680360698
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.9525891835410518,
+            "edge_ssim": 0.9052651734174203
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999732971191406,
+            "valid": true,
+            "edge_corr": 0.9660507241667603,
+            "edge_ssim": 0.9268383177121822
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999809265136719,
+            "valid": true,
+            "edge_corr": 0.9636917032042088,
+            "edge_ssim": 0.9289761344104608
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9909349575686318,
+            "mae": 4.733559608459473
+          },
+          {
+            "band": 2,
+            "corr": 0.9943397669999045,
+            "mae": 3.0548672676086426
+          },
+          {
+            "band": 3,
+            "corr": 0.9938029593749111,
+            "mae": 3.108175754547119
+          },
+          {
+            "band": 4,
+            "corr": 0.9992019273647302,
+            "mae": 2.2858080863952637
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.17363335005127e-05,
+        "res_y": 3.17363335005127e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32616",
+        "width": 1005,
+        "height": 1213,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 13,
+      "ranked_candidate_count": 7,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190525_161148_100a"
+    },
+    {
+      "event": "US-Alabama",
+      "chip_id": "NAL_16_10",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Alabama/PS/NAL_16_10.tif",
+      "reference_capture_timestamp": "2019-05-25T16:10:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Alabama/NAL_16_10/20190527_164551_79_106a.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Alabama/NAL_16_10/20190527_164551_79_106a.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Alabama/NAL_16_10/match_diagnostics.json",
+      "item_id": "20190527_164551_79_106a",
+      "instrument": "PS2.SD",
+      "fetch_capture_timestamp": "2019-05-27T16:45:51.791940+00:00",
+      "timedelta_hours": 48.598,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9998970031738281,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.3883192179868463,
+        "match_min_quad_corr": 0.2063148435984087,
+        "match_mean_quad_ssim": 0.5390215424139169,
+        "match_mean_corr": 0.2053626569302652,
+        "match_mean_mae": 39.01689624786377,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999732971191406,
+            "valid": true,
+            "edge_corr": 0.5946118593006715,
+            "edge_ssim": 0.6426323357365931
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.4970800923043765,
+            "edge_ssim": 0.5839499242478703
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9996452331542969,
+            "valid": true,
+            "edge_corr": 0.2552700767439283,
+            "edge_ssim": 0.4991792431935239
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.999969482421875,
+            "valid": true,
+            "edge_corr": 0.2063148435984087,
+            "edge_ssim": 0.43032466647768053
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": -0.047501622110669814,
+            "mae": 39.079627990722656
+          },
+          {
+            "band": 2,
+            "corr": 0.03156522128579248,
+            "mae": 39.03783416748047
+          },
+          {
+            "band": 3,
+            "corr": 0.13879266654828173,
+            "mae": 39.76439666748047
+          },
+          {
+            "band": 4,
+            "corr": 0.6985943619976565,
+            "mae": 38.185726165771484
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.17363335005127e-05,
+        "res_y": 3.17363335005127e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32616",
+        "width": 996,
+        "height": 1213,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 7,
+      "ranked_candidate_count": 1,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190527_164551_79_106a"
+    },
+    {
+      "event": "US-Alabama",
+      "chip_id": "NAL_27_45",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Alabama/PS/NAL_27_45.tif",
+      "reference_capture_timestamp": "2019-05-25T16:10:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Alabama/NAL_27_45/20190525_160945_100e.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Alabama/NAL_27_45/20190525_160945_100e.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Alabama/NAL_27_45/match_diagnostics.json",
+      "item_id": "20190525_160945_100e",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-25T16:09:45.625391+00:00",
+      "timedelta_hours": 0.004,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999017715454102,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9634159772791105,
+        "match_min_quad_corr": 0.9606331563597422,
+        "match_mean_quad_ssim": 0.9570789543376117,
+        "match_mean_corr": 0.9990025554940278,
+        "match_mean_mae": 1.3662453591823578,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9659703437452167,
+            "edge_ssim": 0.9565894722633107
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9606331563597422,
+            "edge_ssim": 0.9575253034689106
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9997673034667969,
+            "valid": true,
+            "edge_corr": 0.9657212246660534,
+            "edge_ssim": 0.958428732080638
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9998397827148438,
+            "valid": true,
+            "edge_corr": 0.9613391843454299,
+            "edge_ssim": 0.9557723095375878
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9992489909784801,
+            "mae": 1.0882489681243896
+          },
+          {
+            "band": 2,
+            "corr": 0.9991021618603592,
+            "mae": 1.1848528385162354
+          },
+          {
+            "band": 3,
+            "corr": 0.999246129719194,
+            "mae": 0.9204386472702026
+          },
+          {
+            "band": 4,
+            "corr": 0.998412939418078,
+            "mae": 2.2714409828186035
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.17363335005127e-05,
+        "res_y": 3.17363335005127e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32616",
+        "width": 1006,
+        "height": 1209,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 6,
+      "ranked_candidate_count": 1,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190525_160945_100e"
+    },
+    {
+      "event": "US-Alabama",
+      "chip_id": "NAL_31_29",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Alabama/PS/NAL_31_29.tif",
+      "reference_capture_timestamp": "2019-05-25T16:10:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Alabama/NAL_31_29/20190525_160937_100e.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Alabama/NAL_31_29/20190525_160937_100e.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Alabama/NAL_31_29/match_diagnostics.json",
+      "item_id": "20190525_160937_100e",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-25T16:09:37.249365+00:00",
+      "timedelta_hours": 0.006,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999618530273438,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9578698130051619,
+        "match_min_quad_corr": 0.9503012033699213,
+        "match_mean_quad_ssim": 0.9423781479556675,
+        "match_mean_corr": 0.9973172399797682,
+        "match_mean_mae": 2.1658041179180145,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999885559082031,
+            "valid": true,
+            "edge_corr": 0.9610685542662216,
+            "edge_ssim": 0.9453887804916159
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9645511665621646,
+            "edge_ssim": 0.9475157171321416
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9555583278223403,
+            "edge_ssim": 0.9361163646721626
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9998588562011719,
+            "valid": true,
+            "edge_corr": 0.9503012033699213,
+            "edge_ssim": 0.9404917295267504
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9961971920849612,
+            "mae": 2.0025269985198975
+          },
+          {
+            "band": 2,
+            "corr": 0.9971093570744431,
+            "mae": 1.7253235578536987
+          },
+          {
+            "band": 3,
+            "corr": 0.9971714163478373,
+            "mae": 2.5144636631011963
+          },
+          {
+            "band": 4,
+            "corr": 0.9987909944118313,
+            "mae": 2.4209022521972656
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.17363335005127e-05,
+        "res_y": 3.17363335005127e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32616",
+        "width": 998,
+        "height": 1208,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 8,
+      "ranked_candidate_count": 3,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190525_160937_100e"
+    },
+    {
+      "event": "US-Alabama",
+      "chip_id": "NAL_92_47",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Alabama/PS/NAL_92_47.tif",
+      "reference_capture_timestamp": "2019-05-25T16:10:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Alabama/NAL_92_47/20190525_160212_1024.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Alabama/NAL_92_47/20190525_160212_1024.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Alabama/NAL_92_47/match_diagnostics.json",
+      "item_id": "20190525_160212_1024",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-25T16:02:12.132570+00:00",
+      "timedelta_hours": 0.13,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999608993530273,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.952380643277039,
+        "match_min_quad_corr": 0.9473183460658026,
+        "match_mean_quad_ssim": 0.9100936596357136,
+        "match_mean_corr": 0.9928793692169335,
+        "match_mean_mae": 3.970670163631439,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9584080242732222,
+            "edge_ssim": 0.9178256823173694
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999046325683594,
+            "valid": true,
+            "edge_corr": 0.948069364826828,
+            "edge_ssim": 0.9060362873337588
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999923706054688,
+            "valid": true,
+            "edge_corr": 0.9473183460658026,
+            "edge_ssim": 0.9023772986852616
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999465942382812,
+            "valid": true,
+            "edge_corr": 0.9557268379423035,
+            "edge_ssim": 0.9141353702064647
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9884887709485871,
+            "mae": 4.845611572265625
+          },
+          {
+            "band": 2,
+            "corr": 0.9927660674512835,
+            "mae": 3.8651418685913086
+          },
+          {
+            "band": 3,
+            "corr": 0.9918760527017491,
+            "mae": 4.316577911376953
+          },
+          {
+            "band": 4,
+            "corr": 0.9983865857661145,
+            "mae": 2.85534930229187
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.17363335005127e-05,
+        "res_y": 3.17363335005127e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32616",
+        "width": 1016,
+        "height": 1216,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 12,
+      "ranked_candidate_count": 7,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190525_160212_1024"
+    },
+    {
+      "event": "US-Arkansas",
+      "chip_id": "LIT_5_3",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Arkansas/PS/LIT_5_3.tif",
+      "reference_capture_timestamp": "2019-05-29T16:31:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Arkansas/LIT_5_3/20190601_162949_1024.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Arkansas/LIT_5_3/20190601_162949_1024.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Arkansas/LIT_5_3/match_diagnostics.json",
+      "item_id": "20190601_162949_1024",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-06-01T16:29:49.287166+00:00",
+      "timedelta_hours": 71.98,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999771118164062,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9534306332533199,
+        "match_min_quad_corr": 0.9404216798993504,
+        "match_mean_quad_ssim": 0.9175398608830896,
+        "match_mean_corr": 0.9946446487344699,
+        "match_mean_mae": 4.526909351348877,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999885559082031,
+            "valid": true,
+            "edge_corr": 0.9651426383810673,
+            "edge_ssim": 0.9310188433685178
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9626082194307268,
+            "edge_ssim": 0.9315081844098023
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999542236328125,
+            "valid": true,
+            "edge_corr": 0.9455499953021352,
+            "edge_ssim": 0.9049156782951495
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999656677246094,
+            "valid": true,
+            "edge_corr": 0.9404216798993504,
+            "edge_ssim": 0.9027167374588883
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9917766915846341,
+            "mae": 5.126149654388428
+          },
+          {
+            "band": 2,
+            "corr": 0.9946682160209221,
+            "mae": 4.078423023223877
+          },
+          {
+            "band": 3,
+            "corr": 0.9958875212490901,
+            "mae": 4.474696636199951
+          },
+          {
+            "band": 4,
+            "corr": 0.9962461660832332,
+            "mae": 4.428368091583252
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.170845991474691e-05,
+        "res_y": 3.170845991474691e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 999,
+        "height": 1208,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 10,
+      "ranked_candidate_count": 1,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190601_162949_1024"
+    },
+    {
+      "event": "US-Carolina",
+      "chip_id": "FLO_40_23",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Carolina/PS/FLO_40_23.tif",
+      "reference_capture_timestamp": "2018-09-19T15:28:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Carolina/FLO_40_23/20180919_152007_100d.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Carolina/FLO_40_23/20180919_152007_100d.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Carolina/FLO_40_23/match_diagnostics.json",
+      "item_id": "20180919_152007_100d",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2018-09-19T15:20:07.483168+00:00",
+      "timedelta_hours": 0.131,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9998798370361328,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.8744977393894026,
+        "match_min_quad_corr": 0.8562872282659765,
+        "match_mean_quad_ssim": 0.7587652755020105,
+        "match_mean_corr": 0.9833103754326216,
+        "match_mean_mae": 7.048222899436951,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9998207092285156,
+            "valid": true,
+            "edge_corr": 0.8659455107112528,
+            "edge_ssim": 0.7539481434216508
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.99981689453125,
+            "valid": true,
+            "edge_corr": 0.8978606104313613,
+            "edge_ssim": 0.7832263056628558
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.87789760814902,
+            "edge_ssim": 0.7532137979833383
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9998855590820312,
+            "valid": true,
+            "edge_corr": 0.8562872282659765,
+            "edge_ssim": 0.7446728549401971
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9695616689809423,
+            "mae": 9.308390617370605
+          },
+          {
+            "band": 2,
+            "corr": 0.9874423883416631,
+            "mae": 5.996801853179932
+          },
+          {
+            "band": 3,
+            "corr": 0.9854010993697744,
+            "mae": 6.4881720542907715
+          },
+          {
+            "band": 4,
+            "corr": 0.9908363450381064,
+            "mae": 6.399527072906494
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.155585843054271e-05,
+        "res_y": 3.155585843054271e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32617",
+        "width": 1014,
+        "height": 1216,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 14,
+      "ranked_candidate_count": 4,
+      "attempt_count": 4,
+      "best_item_id_summary": "20180919_152007_100d"
+    },
+    {
+      "event": "US-Carolina",
+      "chip_id": "FLO_48_43",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Carolina/PS/FLO_48_43.tif",
+      "reference_capture_timestamp": "2018-09-19T15:28:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Carolina/FLO_48_43/20180919_152342_0e19.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Carolina/FLO_48_43/20180919_152342_0e19.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Carolina/FLO_48_43/match_diagnostics.json",
+      "item_id": "20180919_152342_0e19",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2018-09-19T15:23:42.487861+00:00",
+      "timedelta_hours": 0.072,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9998159408569336,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9296865086959754,
+        "match_min_quad_corr": 0.9015666712672464,
+        "match_mean_quad_ssim": 0.8839877917424588,
+        "match_mean_corr": 0.9908783135757131,
+        "match_mean_mae": 4.334690093994141,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9998359680175781,
+            "valid": true,
+            "edge_corr": 0.9467850589372527,
+            "edge_ssim": 0.8900753578640833
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9998931884765625,
+            "valid": true,
+            "edge_corr": 0.9015666712672464,
+            "edge_ssim": 0.8808151603261402
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999771118164062,
+            "valid": true,
+            "edge_corr": 0.9344745078872784,
+            "edge_ssim": 0.8830922467045365
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9995574951171875,
+            "valid": true,
+            "edge_corr": 0.9359197966921238,
+            "edge_ssim": 0.881968402075075
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9861912252512737,
+            "mae": 4.719432353973389
+          },
+          {
+            "band": 2,
+            "corr": 0.9918790917002583,
+            "mae": 3.7504191398620605
+          },
+          {
+            "band": 3,
+            "corr": 0.9900743312255469,
+            "mae": 4.547936916351318
+          },
+          {
+            "band": 4,
+            "corr": 0.9953686061257736,
+            "mae": 4.320971965789795
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.155585843054271e-05,
+        "res_y": 3.155585843054271e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32617",
+        "width": 1023,
+        "height": 1218,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 7,
+      "ranked_candidate_count": 2,
+      "attempt_count": 2,
+      "best_item_id_summary": "20180919_152342_0e19"
+    },
+    {
+      "event": "US-Carolina",
+      "chip_id": "FLO_59_42",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Carolina/PS/FLO_59_42.tif",
+      "reference_capture_timestamp": "2018-09-19T15:28:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Carolina/FLO_59_42/20180919_152722_1039.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Carolina/FLO_59_42/20180919_152722_1039.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Carolina/FLO_59_42/match_diagnostics.json",
+      "item_id": "20180919_152722_1039",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2018-09-19T15:27:22.391112+00:00",
+      "timedelta_hours": 0.01,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9998836517333984,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9610342681923596,
+        "match_min_quad_corr": 0.9567848400839528,
+        "match_mean_quad_ssim": 0.9515283593659469,
+        "match_mean_corr": 0.9979761697912125,
+        "match_mean_mae": 1.8701059818267822,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9995803833007812,
+            "valid": true,
+            "edge_corr": 0.9662489917219927,
+            "edge_ssim": 0.9543075025067433
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9567848400839528,
+            "edge_ssim": 0.9579012297687154
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999542236328125,
+            "valid": true,
+            "edge_corr": 0.9635091798374297,
+            "edge_ssim": 0.9522826876329805
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9575940611260634,
+            "edge_ssim": 0.9416220175553487
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9979060256317895,
+            "mae": 1.8471062183380127
+          },
+          {
+            "band": 2,
+            "corr": 0.9983640182872996,
+            "mae": 1.4968218803405762
+          },
+          {
+            "band": 3,
+            "corr": 0.9977538684684014,
+            "mae": 1.8094775676727295
+          },
+          {
+            "band": 4,
+            "corr": 0.9978807667773593,
+            "mae": 2.3270182609558105
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.155585843054271e-05,
+        "res_y": 3.155585843054271e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32617",
+        "width": 1028,
+        "height": 1222,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 11,
+      "ranked_candidate_count": 3,
+      "attempt_count": 1,
+      "best_item_id_summary": "20180919_152722_1039"
+    },
+    {
+      "event": "US-Carolina",
+      "chip_id": "FLO_88_23",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Carolina/PS/FLO_88_23.tif",
+      "reference_capture_timestamp": "2018-09-19T15:28:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Carolina/FLO_88_23/20180919_152330_1024.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Carolina/FLO_88_23/20180919_152330_1024.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Carolina/FLO_88_23/match_diagnostics.json",
+      "item_id": "20180919_152330_1024",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2018-09-19T15:23:30.752775+00:00",
+      "timedelta_hours": 0.075,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9998044967651367,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.956880272191196,
+        "match_min_quad_corr": 0.9480194996797142,
+        "match_mean_quad_ssim": 0.9257177861582253,
+        "match_mean_corr": 0.9956960389769518,
+        "match_mean_mae": 3.0610482692718506,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999809265136719,
+            "valid": true,
+            "edge_corr": 0.9574173294268917,
+            "edge_ssim": 0.9317024961680771
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999465942382812,
+            "valid": true,
+            "edge_corr": 0.9676935237724441,
+            "edge_ssim": 0.9443502901516712
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9992904663085938,
+            "valid": true,
+            "edge_corr": 0.9543907358857336,
+            "edge_ssim": 0.9156883215408702
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9480194996797142,
+            "edge_ssim": 0.9111300367722831
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9934095623329074,
+            "mae": 3.8275163173675537
+          },
+          {
+            "band": 2,
+            "corr": 0.99570964729098,
+            "mae": 2.701831579208374
+          },
+          {
+            "band": 3,
+            "corr": 0.9949780085741317,
+            "mae": 3.0232584476470947
+          },
+          {
+            "band": 4,
+            "corr": 0.9986869377097884,
+            "mae": 2.69158673286438
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.155585843054271e-05,
+        "res_y": 3.155585843054271e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32618",
+        "width": 1018,
+        "height": 1220,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 10,
+      "ranked_candidate_count": 2,
+      "attempt_count": 1,
+      "best_item_id_summary": "20180919_152330_1024"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_100_44",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_100_44.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_100_44/20190609_170009_1004.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_100_44/20190609_170009_1004.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_100_44/match_diagnostics.json",
+      "item_id": "20190609_170009_1004",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-06-09T17:00:09.833215+00:00",
+      "timedelta_hours": 0.031,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999752044677734,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9572471923201972,
+        "match_min_quad_corr": 0.9511278369365386,
+        "match_mean_quad_ssim": 0.9142204926677803,
+        "match_mean_corr": 0.9970132000426978,
+        "match_mean_mae": 2.5198707580566406,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9623665270608476,
+            "edge_ssim": 0.9176441196382914
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9511278369365386,
+            "edge_ssim": 0.9072980940282354
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999008178710938,
+            "valid": true,
+            "edge_corr": 0.9578581330221004,
+            "edge_ssim": 0.9178554027995367
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9576362722613024,
+            "edge_ssim": 0.9140843542050575
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9950553425347511,
+            "mae": 3.214806079864502
+          },
+          {
+            "band": 2,
+            "corr": 0.9974269052935425,
+            "mae": 2.330190896987915
+          },
+          {
+            "band": 3,
+            "corr": 0.9974872781892973,
+            "mae": 2.4207286834716797
+          },
+          {
+            "band": 4,
+            "corr": 0.9980832741532001,
+            "mae": 2.113757371902466
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1012,
+        "height": 1455,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 19,
+      "ranked_candidate_count": 10,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190609_170009_1004"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_101_35",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_101_35.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_101_35/20190609_170004_1004.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_101_35/20190609_170004_1004.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_101_35/match_diagnostics.json",
+      "item_id": "20190609_170004_1004",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-06-09T17:00:04.645910+00:00",
+      "timedelta_hours": 0.032,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.999873161315918,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9621805262525812,
+        "match_min_quad_corr": 0.9568684514884814,
+        "match_mean_quad_ssim": 0.9643840745478494,
+        "match_mean_corr": 0.999164881067095,
+        "match_mean_mae": 1.4389666616916656,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999504089355469,
+            "valid": true,
+            "edge_corr": 0.9568684514884814,
+            "edge_ssim": 0.9625704758138475
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999656677246094,
+            "valid": true,
+            "edge_corr": 0.9621848218646493,
+            "edge_ssim": 0.9648692467142829
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.9603481713296562,
+            "edge_ssim": 0.9665451355120306
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9995803833007812,
+            "valid": true,
+            "edge_corr": 0.9693206603275378,
+            "edge_ssim": 0.9635514401512367
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.999245752945741,
+            "mae": 1.2813903093338013
+          },
+          {
+            "band": 2,
+            "corr": 0.9994654960618402,
+            "mae": 1.1472593545913696
+          },
+          {
+            "band": 3,
+            "corr": 0.9993468025144234,
+            "mae": 1.2895487546920776
+          },
+          {
+            "band": 4,
+            "corr": 0.9986014727463753,
+            "mae": 2.037668228149414
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1007,
+        "height": 1456,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 17,
+      "ranked_candidate_count": 8,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190609_170004_1004"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_14_6",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_14_6.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_14_6/20190609_170414_0e2f.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_14_6/20190609_170414_0e2f.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_14_6/match_diagnostics.json",
+      "item_id": "20190609_170414_0e2f",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-06-09T17:04:14.018193+00:00",
+      "timedelta_hours": 0.037,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999799728393555,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9567377239038622,
+        "match_min_quad_corr": 0.9522023573627313,
+        "match_mean_quad_ssim": 0.9131637255334397,
+        "match_mean_corr": 0.996142448081831,
+        "match_mean_mae": 2.809267044067383,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9609775219117238,
+            "edge_ssim": 0.9139648558649157
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9522023573627313,
+            "edge_ssim": 0.9126125837157291
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9585180652784329,
+            "edge_ssim": 0.9149349592768465
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999198913574219,
+            "valid": true,
+            "edge_corr": 0.9552529510625614,
+            "edge_ssim": 0.9111425032762678
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9935287429579321,
+            "mae": 3.5362536907196045
+          },
+          {
+            "band": 2,
+            "corr": 0.9958978630068692,
+            "mae": 2.652230739593506
+          },
+          {
+            "band": 3,
+            "corr": 0.9963063489109206,
+            "mae": 2.6992979049682617
+          },
+          {
+            "band": 4,
+            "corr": 0.9988368374516016,
+            "mae": 2.349285840988159
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 956,
+        "height": 1436,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 12,
+      "ranked_candidate_count": 6,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190609_170414_0e2f"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_16_49",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_16_49.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_16_49/20190609_171406_103c.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_16_49/20190609_171406_103c.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_16_49/match_diagnostics.json",
+      "item_id": "20190609_171406_103c",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-06-09T17:14:06.714898+00:00",
+      "timedelta_hours": 0.202,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999799728393555,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9540121273116641,
+        "match_min_quad_corr": 0.9463819144978068,
+        "match_mean_quad_ssim": 0.9097724445779627,
+        "match_mean_corr": 0.9970662278628386,
+        "match_mean_mae": 2.8237451314926147,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.99993896484375,
+            "valid": true,
+            "edge_corr": 0.9463819144978068,
+            "edge_ssim": 0.9031922330745314
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9545040210925089,
+            "edge_ssim": 0.9067733723384892
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999809265136719,
+            "valid": true,
+            "edge_corr": 0.9590316948019829,
+            "edge_ssim": 0.9156096063983915
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9561308788543577,
+            "edge_ssim": 0.9135145665004389
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9955679875528567,
+            "mae": 3.569376230239868
+          },
+          {
+            "band": 2,
+            "corr": 0.9968450744046421,
+            "mae": 2.939149856567383
+          },
+          {
+            "band": 3,
+            "corr": 0.9970173653923874,
+            "mae": 2.8356220722198486
+          },
+          {
+            "band": 4,
+            "corr": 0.9988344841014684,
+            "mae": 1.9508323669433594
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 984,
+        "height": 1434,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 8,
+      "ranked_candidate_count": 2,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190609_171406_103c"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_24_54",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_24_54.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_24_54/20190609_170051_0e0e.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_24_54/20190609_170051_0e0e.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_24_54/match_diagnostics.json",
+      "item_id": "20190609_170051_0e0e",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-06-09T17:00:51.092742+00:00",
+      "timedelta_hours": 0.019,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999885559082031,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9505706244260673,
+        "match_min_quad_corr": 0.9479237930794768,
+        "match_mean_quad_ssim": 0.9189154624734654,
+        "match_mean_corr": 0.9968046353878446,
+        "match_mean_mae": 2.9656554460525513,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9563419035054389,
+            "edge_ssim": 0.9240440458770974
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999923706054688,
+            "valid": true,
+            "edge_corr": 0.9479237930794768,
+            "edge_ssim": 0.9150762757336975
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9484454971599738,
+            "edge_ssim": 0.919166225682631
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999618530273438,
+            "valid": true,
+            "edge_corr": 0.9495713039593796,
+            "edge_ssim": 0.9173753026004362
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9944371631987979,
+            "mae": 4.012346267700195
+          },
+          {
+            "band": 2,
+            "corr": 0.9965632898298475,
+            "mae": 2.9513919353485107
+          },
+          {
+            "band": 3,
+            "corr": 0.9972268227050585,
+            "mae": 2.6767451763153076
+          },
+          {
+            "band": 4,
+            "corr": 0.9989912658176747,
+            "mae": 2.2221384048461914
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 982,
+        "height": 1430,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 9,
+      "ranked_candidate_count": 2,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190609_170051_0e0e"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_33_21",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_33_21.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_33_21/20190607_171853_11_106f.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_33_21/20190607_171853_11_106f.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_33_21/match_diagnostics.json",
+      "item_id": "20190607_171853_11_106f",
+      "instrument": "PS2.SD",
+      "fetch_capture_timestamp": "2019-06-07T17:18:53.113819+00:00",
+      "timedelta_hours": 47.719,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 2,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999752044677734,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.5099490238715446,
+        "match_min_quad_corr": -0.007723717698137747,
+        "match_mean_quad_ssim": 0.6465549752355111,
+        "match_mean_corr": 0.5040411294928404,
+        "match_mean_mae": 66.37458276748657,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999046325683594,
+            "valid": true,
+            "edge_corr": -0.007723717698137747,
+            "edge_ssim": 0.6273591180607748
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.6975275762899089,
+            "edge_ssim": 0.63351745341781
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.6356620884520787,
+            "edge_ssim": 0.6792797851443907
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.7143301484423284,
+            "edge_ssim": 0.6460635443190688
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.2734578582962325,
+            "mae": 104.10028076171875
+          },
+          {
+            "band": 2,
+            "corr": 0.36640728318841553,
+            "mae": 80.82275390625
+          },
+          {
+            "band": 3,
+            "corr": 0.4704012813586231,
+            "mae": 65.36109161376953
+          },
+          {
+            "band": 4,
+            "corr": 0.9058980951280905,
+            "mae": 15.214204788208008
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 953,
+        "height": 1427,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 9,
+      "ranked_candidate_count": 2,
+      "attempt_count": 2,
+      "best_item_id_summary": "20190607_171853_11_106f"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_34_29",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_34_29.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_34_29/20190609_170035_0e0e.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_34_29/20190609_170035_0e0e.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_34_29/match_diagnostics.json",
+      "item_id": "20190609_170035_0e0e",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-06-09T17:00:35.559661+00:00",
+      "timedelta_hours": 0.023,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999589920043945,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9339324553807187,
+        "match_min_quad_corr": 0.9228467183320292,
+        "match_mean_quad_ssim": 0.9043968226076641,
+        "match_mean_corr": 0.9937478586511524,
+        "match_mean_mae": 3.6507351398468018,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9998970031738281,
+            "valid": true,
+            "edge_corr": 0.9322651262756624,
+            "edge_ssim": 0.9242031005849899
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9541667836670931,
+            "edge_ssim": 0.9206082234706624
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.99993896484375,
+            "valid": true,
+            "edge_corr": 0.9228467183320292,
+            "edge_ssim": 0.8780102311474876
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9264511932480902,
+            "edge_ssim": 0.8947657352275162
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9875501146430617,
+            "mae": 5.399222373962402
+          },
+          {
+            "band": 2,
+            "corr": 0.9933114013201318,
+            "mae": 4.019814491271973
+          },
+          {
+            "band": 3,
+            "corr": 0.9946564664970043,
+            "mae": 3.661341905593872
+          },
+          {
+            "band": 4,
+            "corr": 0.9994734521444122,
+            "mae": 1.52256178855896
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 957,
+        "height": 1425,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 8,
+      "ranked_candidate_count": 3,
+      "attempt_count": 3,
+      "best_item_id_summary": "20190609_170035_0e0e"
+    },
+    {
+      "event": "US-Dakota",
+      "chip_id": "RRN_34_52",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Dakota/PS/RRN_34_52.tif",
+      "reference_capture_timestamp": "2019-06-09T17:02:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Dakota/RRN_34_52/20190609_171755_36_106c.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Dakota/RRN_34_52/20190609_171755_36_106c.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Dakota/RRN_34_52/match_diagnostics.json",
+      "item_id": "20190609_171755_36_106c",
+      "instrument": "PS2.SD",
+      "fetch_capture_timestamp": "2019-06-09T17:17:55.360207+00:00",
+      "timedelta_hours": 0.265,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9997701644897461,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9245159912293337,
+        "match_min_quad_corr": 0.8807378667510537,
+        "match_mean_quad_ssim": 0.899818139789858,
+        "match_mean_corr": 0.979772553557199,
+        "match_mean_mae": 5.115318953990936,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999122619628906,
+            "valid": true,
+            "edge_corr": 0.8807378667510537,
+            "edge_ssim": 0.8388156806745506
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9991683959960938,
+            "valid": true,
+            "edge_corr": 0.9337603067907391,
+            "edge_ssim": 0.9224978167964982
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9409218269747802,
+            "edge_ssim": 0.9222278230838293
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9426439644007618,
+            "edge_ssim": 0.9157312386045539
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9449377823268205,
+            "mae": 8.755760192871094
+          },
+          {
+            "band": 2,
+            "corr": 0.9857997200361036,
+            "mae": 4.687836170196533
+          },
+          {
+            "band": 3,
+            "corr": 0.997174697697908,
+            "mae": 2.774440050125122
+          },
+          {
+            "band": 4,
+            "corr": 0.9911780141679642,
+            "mae": 4.243239402770996
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.7527933229228034e-05,
+        "res_y": 3.7527933229228034e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 974,
+        "height": 1426,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 11,
+      "ranked_candidate_count": 1,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190609_171755_36_106c"
+    },
+    {
+      "event": "US-Kansas",
+      "chip_id": "USA_29_9",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Kansas/PS/USA_29_9.tif",
+      "reference_capture_timestamp": "2019-05-22T16:57:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Kansas/USA_29_9/20190522_171024_75_106b.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Kansas/USA_29_9/20190522_171024_75_106b.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Kansas/USA_29_9/match_diagnostics.json",
+      "item_id": "20190522_171024_75_106b",
+      "instrument": "PS2.SD",
+      "fetch_capture_timestamp": "2019-05-22T17:10:24.756297+00:00",
+      "timedelta_hours": 0.224,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 2,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999561309814453,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9339863038615492,
+        "match_min_quad_corr": 0.9297629486342569,
+        "match_mean_quad_ssim": 0.883106103703602,
+        "match_mean_corr": 0.9939016059580634,
+        "match_mean_mae": 4.795119285583496,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9355686562703086,
+            "edge_ssim": 0.8860803887778061
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999771118164062,
+            "valid": true,
+            "edge_corr": 0.9360897131080552,
+            "edge_ssim": 0.8859689847339893
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.999969482421875,
+            "valid": true,
+            "edge_corr": 0.9297629486342569,
+            "edge_ssim": 0.8806702106070368
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9998779296875,
+            "valid": true,
+            "edge_corr": 0.9345238974335758,
+            "edge_ssim": 0.8797048306955758
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9943107778156566,
+            "mae": 4.8233113288879395
+          },
+          {
+            "band": 2,
+            "corr": 0.9924092225462977,
+            "mae": 5.853908538818359
+          },
+          {
+            "band": 3,
+            "corr": 0.9967231953317105,
+            "mae": 3.539827823638916
+          },
+          {
+            "band": 4,
+            "corr": 0.9921632281385889,
+            "mae": 4.9634294509887695
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.314723310602137e-05,
+        "res_y": 3.314723310602137e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 993,
+        "height": 1277,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 11,
+      "ranked_candidate_count": 3,
+      "attempt_count": 3,
+      "best_item_id_summary": "20190522_171024_75_106b"
+    },
+    {
+      "event": "US-Kansas",
+      "chip_id": "USA_31_6",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Kansas/PS/USA_31_6.tif",
+      "reference_capture_timestamp": "2019-05-22T16:57:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Kansas/USA_31_6/20190522_165720_86_1066.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Kansas/USA_31_6/20190522_165720_86_1066.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Kansas/USA_31_6/match_diagnostics.json",
+      "item_id": "20190522_165720_86_1066",
+      "instrument": "PS2.SD",
+      "fetch_capture_timestamp": "2019-05-22T16:57:20.867267+00:00",
+      "timedelta_hours": 0.006,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999580383300781,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9364976271671692,
+        "match_min_quad_corr": 0.9277316189029785,
+        "match_mean_quad_ssim": 0.887508926769004,
+        "match_mean_corr": 0.9937866818990071,
+        "match_mean_mae": 4.517220914363861,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9998817443847656,
+            "valid": true,
+            "edge_corr": 0.9427843692433834,
+            "edge_ssim": 0.8839728853415515
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999504089355469,
+            "valid": true,
+            "edge_corr": 0.9414884796532764,
+            "edge_ssim": 0.8847441455225158
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9339860408690384,
+            "edge_ssim": 0.8873045530732875
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9277316189029785,
+            "edge_ssim": 0.894014123138661
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9915150049008121,
+            "mae": 5.062836170196533
+          },
+          {
+            "band": 2,
+            "corr": 0.9910016456089824,
+            "mae": 5.634395122528076
+          },
+          {
+            "band": 3,
+            "corr": 0.9963981668017396,
+            "mae": 3.6110079288482666
+          },
+          {
+            "band": 4,
+            "corr": 0.9962319102844942,
+            "mae": 3.7606444358825684
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.314723310602137e-05,
+        "res_y": 3.314723310602137e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 991,
+        "height": 1277,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 8,
+      "ranked_candidate_count": 5,
+      "attempt_count": 5,
+      "best_item_id_summary": "20190522_165720_86_1066"
+    },
+    {
+      "event": "US-Kansas",
+      "chip_id": "USA_33_26",
+      "selection_reason": "best_unmatched_attempt",
+      "current_workflow_matched": false,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Kansas/PS/USA_33_26.tif",
+      "reference_capture_timestamp": "2019-05-22T16:57:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Kansas/USA_33_26/20190522_171016_33_106b.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Kansas/USA_33_26/20190522_171016_33_106b.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Kansas/USA_33_26/match_diagnostics.json",
+      "item_id": "20190522_171016_33_106b",
+      "instrument": "PS2.SD",
+      "fetch_capture_timestamp": "2019-05-22T17:10:16.330464+00:00",
+      "timedelta_hours": 0.221,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999666213989258,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9146057362593378,
+        "match_min_quad_corr": 0.8878821440309367,
+        "match_mean_quad_ssim": 0.8450057723156345,
+        "match_mean_corr": 0.9887404002421787,
+        "match_mean_mae": 5.47483229637146,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9998664855957031,
+            "valid": true,
+            "edge_corr": 0.9319974200656634,
+            "edge_ssim": 0.8467677619333495
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9175305584242519,
+            "edge_ssim": 0.8515931019559299
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9210128225164993,
+            "edge_ssim": 0.8704894410008274
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.8878821440309367,
+            "edge_ssim": 0.8111727843724311
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9912336967507103,
+            "mae": 5.001745700836182
+          },
+          {
+            "band": 2,
+            "corr": 0.9884083757088828,
+            "mae": 5.653741836547852
+          },
+          {
+            "band": 3,
+            "corr": 0.994847760796288,
+            "mae": 4.048120498657227
+          },
+          {
+            "band": 4,
+            "corr": 0.9804717677128334,
+            "mae": 7.19572114944458
+          }
+        ],
+        "matched": false
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.314723310602137e-05,
+        "res_y": 3.314723310602137e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 999,
+        "height": 1276,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 5,
+      "ranked_candidate_count": 3,
+      "attempt_count": 3,
+      "best_item_id_summary": "20190522_171016_33_106b"
+    },
+    {
+      "event": "US-Nebraska",
+      "chip_id": "NEB_47_10",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Nebraska/PS/NEB_47_10.tif",
+      "reference_capture_timestamp": "2017-09-29T14:30:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Nebraska/NEB_47_10/20170929_163113_1029.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Nebraska/NEB_47_10/20170929_163113_1029.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Nebraska/NEB_47_10/match_diagnostics.json",
+      "item_id": "20170929_163113_1029",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2017-09-29T16:31:13.199544+00:00",
+      "timedelta_hours": 2.02,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999542236328125,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9549350718750098,
+        "match_min_quad_corr": 0.9541926197569486,
+        "match_mean_quad_ssim": 0.918548377354772,
+        "match_mean_corr": 0.9919394812438582,
+        "match_mean_mae": 3.6480828523635864,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999504089355469,
+            "valid": true,
+            "edge_corr": 0.9555435749928471,
+            "edge_ssim": 0.9170695989356163
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999504089355469,
+            "valid": true,
+            "edge_corr": 0.9541926197569486,
+            "edge_ssim": 0.9206393582922993
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.9552640421726077,
+            "edge_ssim": 0.9286900035067133
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999198913574219,
+            "valid": true,
+            "edge_corr": 0.9547400505776354,
+            "edge_ssim": 0.9077945486844591
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9875835088777573,
+            "mae": 4.178371906280518
+          },
+          {
+            "band": 2,
+            "corr": 0.9913919535736068,
+            "mae": 3.578519105911255
+          },
+          {
+            "band": 3,
+            "corr": 0.9917106701303996,
+            "mae": 3.723590135574341
+          },
+          {
+            "band": 4,
+            "corr": 0.9970717923936694,
+            "mae": 3.1118502616882324
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.38519889519302e-05,
+        "res_y": 3.38519889519302e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1005,
+        "height": 1312,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 12,
+      "ranked_candidate_count": 2,
+      "attempt_count": 1,
+      "best_item_id_summary": "20170929_163113_1029"
+    },
+    {
+      "event": "US-Nebraska",
+      "chip_id": "NEB_56_17",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Nebraska/PS/NEB_56_17.tif",
+      "reference_capture_timestamp": "2017-09-29T14:30:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Nebraska/NEB_56_17/20170929_162945_1001.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Nebraska/NEB_56_17/20170929_162945_1001.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Nebraska/NEB_56_17/match_diagnostics.json",
+      "item_id": "20170929_162945_1001",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2017-09-29T16:29:45.125893+00:00",
+      "timedelta_hours": 1.996,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999542236328125,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9535639807820887,
+        "match_min_quad_corr": 0.9481637117915203,
+        "match_mean_quad_ssim": 0.9147189763620716,
+        "match_mean_corr": 0.9939254391371621,
+        "match_mean_mae": 3.7909191250801086,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999313354492188,
+            "valid": true,
+            "edge_corr": 0.9481637117915203,
+            "edge_ssim": 0.9022055277862636
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999771118164062,
+            "valid": true,
+            "edge_corr": 0.9527230513457122,
+            "edge_ssim": 0.9140029286167493
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999313354492188,
+            "valid": true,
+            "edge_corr": 0.9581508819268937,
+            "edge_ssim": 0.9224058384407702
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999771118164062,
+            "valid": true,
+            "edge_corr": 0.9552182780642288,
+            "edge_ssim": 0.9202616106045033
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9921639696225615,
+            "mae": 4.385840892791748
+          },
+          {
+            "band": 2,
+            "corr": 0.9940322507544238,
+            "mae": 3.7696170806884766
+          },
+          {
+            "band": 3,
+            "corr": 0.9935430354897986,
+            "mae": 3.963778495788574
+          },
+          {
+            "band": 4,
+            "corr": 0.995962500681865,
+            "mae": 3.0444400310516357
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.38519889519302e-05,
+        "res_y": 3.38519889519302e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1013,
+        "height": 1316,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 11,
+      "ranked_candidate_count": 3,
+      "attempt_count": 1,
+      "best_item_id_summary": "20170929_162945_1001"
+    },
+    {
+      "event": "US-Nebraska",
+      "chip_id": "NEB_57_20",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Nebraska/PS/NEB_57_20.tif",
+      "reference_capture_timestamp": "2017-09-29T14:30:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Nebraska/NEB_57_20/20170929_162946_1001.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Nebraska/NEB_57_20/20170929_162946_1001.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Nebraska/NEB_57_20/match_diagnostics.json",
+      "item_id": "20170929_162946_1001",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2017-09-29T16:29:46.184739+00:00",
+      "timedelta_hours": 1.996,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999780654907227,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9576143665663193,
+        "match_min_quad_corr": 0.9556243471823325,
+        "match_mean_quad_ssim": 0.9126941564299812,
+        "match_mean_corr": 0.9950420611521122,
+        "match_mean_mae": 3.392350137233734,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9585420261487423,
+            "edge_ssim": 0.9103767757214778
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999885559082031,
+            "valid": true,
+            "edge_corr": 0.9582967270265368,
+            "edge_ssim": 0.916897279808141
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9579943659076654,
+            "edge_ssim": 0.9132553815718611
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999237060546875,
+            "valid": true,
+            "edge_corr": 0.9556243471823325,
+            "edge_ssim": 0.9102471886184448
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9920700729102574,
+            "mae": 4.465498924255371
+          },
+          {
+            "band": 2,
+            "corr": 0.9949230096175098,
+            "mae": 3.379012107849121
+          },
+          {
+            "band": 3,
+            "corr": 0.9955578191640875,
+            "mae": 3.4123191833496094
+          },
+          {
+            "band": 4,
+            "corr": 0.9976173429165941,
+            "mae": 2.312570333480835
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.38519889519302e-05,
+        "res_y": 3.38519889519302e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1014,
+        "height": 1316,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 14,
+      "ranked_candidate_count": 2,
+      "attempt_count": 1,
+      "best_item_id_summary": "20170929_162946_1001"
+    },
+    {
+      "event": "US-Nebraska",
+      "chip_id": "NEB_79_46",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Nebraska/PS/NEB_79_46.tif",
+      "reference_capture_timestamp": "2017-09-29T14:30:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Nebraska/NEB_79_46/20170929_162632_0f35.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Nebraska/NEB_79_46/20170929_162632_0f35.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Nebraska/NEB_79_46/match_diagnostics.json",
+      "item_id": "20170929_162632_0f35",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2017-09-29T16:26:32.387122+00:00",
+      "timedelta_hours": 1.942,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999361038208008,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9556866181560222,
+        "match_min_quad_corr": 0.9499263027018707,
+        "match_mean_quad_ssim": 0.9319251601873841,
+        "match_mean_corr": 0.996464477111094,
+        "match_mean_mae": 2.83637535572052,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999771118164062,
+            "valid": true,
+            "edge_corr": 0.9623539717626344,
+            "edge_ssim": 0.9313427958094533
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9602200081241575,
+            "edge_ssim": 0.9308049371267144
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999504089355469,
+            "valid": true,
+            "edge_corr": 0.9499263027018707,
+            "edge_ssim": 0.9344879240980205
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.99981689453125,
+            "valid": true,
+            "edge_corr": 0.9502461900354261,
+            "edge_ssim": 0.9310649837153484
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.993947845611845,
+            "mae": 3.655137300491333
+          },
+          {
+            "band": 2,
+            "corr": 0.9965020088585972,
+            "mae": 2.573474407196045
+          },
+          {
+            "band": 3,
+            "corr": 0.9967914131475317,
+            "mae": 2.811521530151367
+          },
+          {
+            "band": 4,
+            "corr": 0.998616640826402,
+            "mae": 2.305368185043335
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.38519889519302e-05,
+        "res_y": 3.38519889519302e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 1020,
+        "height": 1310,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 17,
+      "ranked_candidate_count": 4,
+      "attempt_count": 1,
+      "best_item_id_summary": "20170929_162632_0f35"
+    },
+    {
+      "event": "US-Nebraska",
+      "chip_id": "NEB_80_48",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Nebraska/PS/NEB_80_48.tif",
+      "reference_capture_timestamp": "2017-09-29T14:30:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Nebraska/NEB_80_48/20170929_162633_0f35.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Nebraska/NEB_80_48/20170929_162633_0f35.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Nebraska/NEB_80_48/match_diagnostics.json",
+      "item_id": "20170929_162633_0f35",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2017-09-29T16:26:33.429954+00:00",
+      "timedelta_hours": 1.943,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999475479125977,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9510296022463243,
+        "match_min_quad_corr": 0.9463492640117513,
+        "match_mean_quad_ssim": 0.9270916842168291,
+        "match_mean_corr": 0.9942695581478895,
+        "match_mean_mae": 3.231119215488434,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9997901916503906,
+            "valid": true,
+            "edge_corr": 0.9548500920974893,
+            "edge_ssim": 0.9156886568738398
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9463492640117513,
+            "edge_ssim": 0.9181678041325253
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9541453245893584,
+            "edge_ssim": 0.932620219186978
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9487737282866981,
+            "edge_ssim": 0.9418900566739736
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9900013534509345,
+            "mae": 5.012516975402832
+          },
+          {
+            "band": 2,
+            "corr": 0.9940509097767122,
+            "mae": 3.1316075325012207
+          },
+          {
+            "band": 3,
+            "corr": 0.994249085574896,
+            "mae": 2.9304003715515137
+          },
+          {
+            "band": 4,
+            "corr": 0.9987768837890159,
+            "mae": 1.849951982498169
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.38519889519302e-05,
+        "res_y": 3.38519889519302e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 1020,
+        "height": 1310,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 18,
+      "ranked_candidate_count": 5,
+      "attempt_count": 1,
+      "best_item_id_summary": "20170929_162633_0f35"
+    },
+    {
+      "event": "US-Oklahoma",
+      "chip_id": "TUL_3_11",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Oklahoma/PS/TUL_3_11.tif",
+      "reference_capture_timestamp": "2019-05-31T15:51:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Oklahoma/TUL_3_11/20190530_164904_0f22.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Oklahoma/TUL_3_11/20190530_164904_0f22.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Oklahoma/TUL_3_11/match_diagnostics.json",
+      "item_id": "20190530_164904_0f22",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-30T16:49:04.789978+00:00",
+      "timedelta_hours": 23.032,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 3,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999866485595703,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9692190576063368,
+        "match_min_quad_corr": 0.9637385769563442,
+        "match_mean_quad_ssim": 0.9421429100673264,
+        "match_mean_corr": 0.9988883669339537,
+        "match_mean_mae": 2.7042004466056824,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.9680057171325873,
+            "edge_ssim": 0.9405666373234886
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999542236328125,
+            "valid": true,
+            "edge_corr": 0.9637385769563442,
+            "edge_ssim": 0.9355224897897683
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9753870454647197,
+            "edge_ssim": 0.9528422418486339
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.9697448908716958,
+            "edge_ssim": 0.9396402713074151
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9983271760701371,
+            "mae": 3.5651299953460693
+          },
+          {
+            "band": 2,
+            "corr": 0.9990911667528648,
+            "mae": 2.51638126373291
+          },
+          {
+            "band": 3,
+            "corr": 0.9993858178990979,
+            "mae": 2.1096792221069336
+          },
+          {
+            "band": 4,
+            "corr": 0.9987493070137149,
+            "mae": 2.6256113052368164
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.212373904714511e-05,
+        "res_y": 3.212373904714511e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1020,
+        "height": 1244,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 12,
+      "ranked_candidate_count": 7,
+      "attempt_count": 3,
+      "best_item_id_summary": "20190530_164904_0f22"
+    },
+    {
+      "event": "US-Oklahoma",
+      "chip_id": "TUL_5_11",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Oklahoma/PS/TUL_5_11.tif",
+      "reference_capture_timestamp": "2019-05-31T15:51:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Oklahoma/TUL_5_11/20190530_164904_0f22.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Oklahoma/TUL_5_11/20190530_164904_0f22.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Oklahoma/TUL_5_11/match_diagnostics.json",
+      "item_id": "20190530_164904_0f22",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-30T16:49:04.789978+00:00",
+      "timedelta_hours": 23.032,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 2,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999780654907227,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9673197415012598,
+        "match_min_quad_corr": 0.9570095865248378,
+        "match_mean_quad_ssim": 0.9382858169989312,
+        "match_mean_corr": 0.9984883858718729,
+        "match_mean_mae": 2.9654785990715027,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999351501464844,
+            "valid": true,
+            "edge_corr": 0.9570095865248378,
+            "edge_ssim": 0.9196930518327433
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999771118164062,
+            "valid": true,
+            "edge_corr": 0.9660093600022208,
+            "edge_ssim": 0.936738604253538
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9694508076364092,
+            "edge_ssim": 0.9443857429017184
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9768092118415711,
+            "edge_ssim": 0.9523258690077248
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9976860945564983,
+            "mae": 4.111481189727783
+          },
+          {
+            "band": 2,
+            "corr": 0.9987442242878901,
+            "mae": 2.6941866874694824
+          },
+          {
+            "band": 3,
+            "corr": 0.9991796969269116,
+            "mae": 2.245534658432007
+          },
+          {
+            "band": 4,
+            "corr": 0.9983435277161918,
+            "mae": 2.8107118606567383
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.212373904714511e-05,
+        "res_y": 3.212373904714511e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1021,
+        "height": 1245,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 10,
+      "ranked_candidate_count": 6,
+      "attempt_count": 2,
+      "best_item_id_summary": "20190530_164904_0f22"
+    },
+    {
+      "event": "US-Oklahoma",
+      "chip_id": "TUL_5_13",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Oklahoma/PS/TUL_5_13.tif",
+      "reference_capture_timestamp": "2019-05-31T15:51:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Oklahoma/TUL_5_13/20190530_164905_0f22.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Oklahoma/TUL_5_13/20190530_164905_0f22.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Oklahoma/TUL_5_13/match_diagnostics.json",
+      "item_id": "20190530_164905_0f22",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-30T16:49:05.832786+00:00",
+      "timedelta_hours": 23.032,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 2,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999713897705078,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9554080523102143,
+        "match_min_quad_corr": 0.9392361162422141,
+        "match_mean_quad_ssim": 0.9182856934378276,
+        "match_mean_corr": 0.9981967674311883,
+        "match_mean_mae": 3.17161625623703,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9701470903572308,
+            "edge_ssim": 0.9443018075799992
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9562295334429882,
+            "edge_ssim": 0.9201392145457933
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.9560194691984241,
+            "edge_ssim": 0.9148744649220277
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9998893737792969,
+            "valid": true,
+            "edge_corr": 0.9392361162422141,
+            "edge_ssim": 0.8938272867034903
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9972763487490858,
+            "mae": 4.102914810180664
+          },
+          {
+            "band": 2,
+            "corr": 0.9984739704514524,
+            "mae": 2.8324313163757324
+          },
+          {
+            "band": 3,
+            "corr": 0.998926396543749,
+            "mae": 2.52677059173584
+          },
+          {
+            "band": 4,
+            "corr": 0.9981103539804663,
+            "mae": 3.224348306655884
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.212373904714511e-05,
+        "res_y": 3.212373904714511e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1022,
+        "height": 1244,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 10,
+      "ranked_candidate_count": 7,
+      "attempt_count": 2,
+      "best_item_id_summary": "20190530_164905_0f22"
+    },
+    {
+      "event": "US-Oklahoma",
+      "chip_id": "TUL_7_10",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Oklahoma/PS/TUL_7_10.tif",
+      "reference_capture_timestamp": "2019-05-31T15:51:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Oklahoma/TUL_7_10/20190530_164903_0f22.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Oklahoma/TUL_7_10/20190530_164903_0f22.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Oklahoma/TUL_7_10/match_diagnostics.json",
+      "item_id": "20190530_164903_0f22",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-30T16:49:03.747169+00:00",
+      "timedelta_hours": 23.032,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.999964714050293,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9665193845012491,
+        "match_min_quad_corr": 0.9579418287647997,
+        "match_mean_quad_ssim": 0.9350832037785535,
+        "match_mean_corr": 0.9983207851971461,
+        "match_mean_mae": 3.0198711156845093,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999961853027344,
+            "valid": true,
+            "edge_corr": 0.9579418287647997,
+            "edge_ssim": 0.9214751422434343
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999771118164062,
+            "valid": true,
+            "edge_corr": 0.9643363284034314,
+            "edge_ssim": 0.9319608355630878
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999198913574219,
+            "valid": true,
+            "edge_corr": 0.9735788250777111,
+            "edge_ssim": 0.945544890151254
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999656677246094,
+            "valid": true,
+            "edge_corr": 0.9702205557590539,
+            "edge_ssim": 0.9413519471564376
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9974927298900735,
+            "mae": 3.853550672531128
+          },
+          {
+            "band": 2,
+            "corr": 0.9984074464728672,
+            "mae": 2.9734504222869873
+          },
+          {
+            "band": 3,
+            "corr": 0.9986255279794277,
+            "mae": 2.7971670627593994
+          },
+          {
+            "band": 4,
+            "corr": 0.9987574364462157,
+            "mae": 2.4553163051605225
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.212373904714511e-05,
+        "res_y": 3.212373904714511e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1021,
+        "height": 1246,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 15,
+      "ranked_candidate_count": 4,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190530_164903_0f22"
+    },
+    {
+      "event": "US-Oklahoma",
+      "chip_id": "TUL_8_5",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Oklahoma/PS/TUL_8_5.tif",
+      "reference_capture_timestamp": "2019-05-31T15:51:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Oklahoma/TUL_8_5/20190530_164901_0f22.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Oklahoma/TUL_8_5/20190530_164901_0f22.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Oklahoma/TUL_8_5/match_diagnostics.json",
+      "item_id": "20190530_164901_0f22",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2019-05-30T16:49:01.662075+00:00",
+      "timedelta_hours": 23.033,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999713897705078,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9575030115939409,
+        "match_min_quad_corr": 0.9431408566491383,
+        "match_mean_quad_ssim": 0.9189956666255168,
+        "match_mean_corr": 0.9986371009633392,
+        "match_mean_mae": 2.5417296290397644,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999732971191406,
+            "valid": true,
+            "edge_corr": 0.9431408566491383,
+            "edge_ssim": 0.9038882807259038
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9580806718182768,
+            "edge_ssim": 0.9228433688263905
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9649464132167139,
+            "edge_ssim": 0.9246229527766345
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 0.9999122619628906,
+            "valid": true,
+            "edge_corr": 0.9638441046916342,
+            "edge_ssim": 0.9246280641731381
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9980347813206769,
+            "mae": 3.16005277633667
+          },
+          {
+            "band": 2,
+            "corr": 0.9988094615518798,
+            "mae": 2.3053414821624756
+          },
+          {
+            "band": 3,
+            "corr": 0.9988667041364658,
+            "mae": 2.2948551177978516
+          },
+          {
+            "band": 4,
+            "corr": 0.9988374568443349,
+            "mae": 2.4066691398620605
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.212373904714511e-05,
+        "res_y": 3.212373904714511e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32614",
+        "width": 1020,
+        "height": 1246,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 11,
+      "ranked_candidate_count": 5,
+      "attempt_count": 1,
+      "best_item_id_summary": "20190530_164901_0f22"
+    },
+    {
+      "event": "US-Texas",
+      "chip_id": "HRV_10_19",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Texas/PS/HRV_10_19.tif",
+      "reference_capture_timestamp": "2017-08-31T04:17:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Texas/HRV_10_19/20170831_161742_1044.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Texas/HRV_10_19/20170831_161742_1044.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Texas/HRV_10_19/match_diagnostics.json",
+      "item_id": "20170831_161742_1044",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2017-08-31T16:17:42.051744+00:00",
+      "timedelta_hours": 12.012,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 2,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999418258666992,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.955225515479322,
+        "match_min_quad_corr": 0.9479795081183727,
+        "match_mean_quad_ssim": 0.9188069031664371,
+        "match_mean_corr": 0.9937027038704217,
+        "match_mean_mae": 3.7966496348381042,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9999465942382812,
+            "valid": true,
+            "edge_corr": 0.9519487063550661,
+            "edge_ssim": 0.9128386054369189
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9998893737792969,
+            "valid": true,
+            "edge_corr": 0.9479795081183727,
+            "edge_ssim": 0.9034903670651796
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 0.9999313354492188,
+            "valid": true,
+            "edge_corr": 0.959370860457333,
+            "edge_ssim": 0.9286732168107584
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9616029869865161,
+            "edge_ssim": 0.9302254233528915
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.9903985113573045,
+            "mae": 4.071506500244141
+          },
+          {
+            "band": 2,
+            "corr": 0.993940268955058,
+            "mae": 3.457066059112549
+          },
+          {
+            "band": 3,
+            "corr": 0.9953202104499235,
+            "mae": 3.6716153621673584
+          },
+          {
+            "band": 4,
+            "corr": 0.9951518247194008,
+            "mae": 3.986410617828369
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.0334154182653303e-05,
+        "res_y": 3.0334154182653303e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 1030,
+        "height": 1171,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 8,
+      "ranked_candidate_count": 2,
+      "attempt_count": 2,
+      "best_item_id_summary": "20170831_161742_1044"
+    },
+    {
+      "event": "US-Texas",
+      "chip_id": "HRV_17_3",
+      "selection_reason": "current_matched",
+      "current_workflow_matched": true,
+      "reference_fp": "/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025/US-Texas/PS/HRV_17_3.tif",
+      "reference_capture_timestamp": "2017-08-31T04:17:00",
+      "fetch_raster_fp": "/workspace/_outputs/US-Texas/HRV_17_3/20170831_161733_1044.tif",
+      "fetch_manifest_fp": "/workspace/_outputs/US-Texas/HRV_17_3/20170831_161733_1044.manifest.json",
+      "match_diagnostics_fp": "/workspace/_outputs/US-Texas/HRV_17_3/match_diagnostics.json",
+      "item_id": "20170831_161733_1044",
+      "instrument": "PS2",
+      "fetch_capture_timestamp": "2017-08-31T16:17:33.563560+00:00",
+      "timedelta_hours": 12.009,
+      "coverage_ratio": 1.0,
+      "covers_chip": null,
+      "match_candidate_rank": 1,
+      "compare_metrics": {
+        "band_count": 4,
+        "valid_pixel_fraction": 0.9999580383300781,
+        "quadrants_requested": 4,
+        "quadrants_valid": 4,
+        "match_mean_quad_corr": 0.9525524037733588,
+        "match_min_quad_corr": 0.9462477531275308,
+        "match_mean_quad_ssim": 0.9105480590490171,
+        "match_mean_corr": 0.9943540304325084,
+        "match_mean_mae": 3.8414400815963745,
+        "quadrant_metrics": [
+          {
+            "quadrant": "r0c0",
+            "valid_fraction": 0.9998664855957031,
+            "valid": true,
+            "edge_corr": 0.951375665677605,
+            "edge_ssim": 0.9026934140332149
+          },
+          {
+            "quadrant": "r0c1",
+            "valid_fraction": 0.9999656677246094,
+            "valid": true,
+            "edge_corr": 0.9532860603612221,
+            "edge_ssim": 0.9125039843556424
+          },
+          {
+            "quadrant": "r1c0",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9462477531275308,
+            "edge_ssim": 0.9058157261101493
+          },
+          {
+            "quadrant": "r1c1",
+            "valid_fraction": 1.0,
+            "valid": true,
+            "edge_corr": 0.9593001359270775,
+            "edge_ssim": 0.9211791116970618
+          }
+        ],
+        "band_metrics": [
+          {
+            "band": 1,
+            "corr": 0.993889267249945,
+            "mae": 3.9916248321533203
+          },
+          {
+            "band": 2,
+            "corr": 0.9957104255823935,
+            "mae": 3.256683349609375
+          },
+          {
+            "band": 3,
+            "corr": 0.9954645185095261,
+            "mae": 3.4545722007751465
+          },
+          {
+            "band": 4,
+            "corr": 0.992351910388169,
+            "mae": 4.662879943847656
+          }
+        ],
+        "matched": true
+      },
+      "reference_meta": {
+        "crs": "EPSG:4326",
+        "width": 1024,
+        "height": 1024,
+        "count": 4,
+        "res_x": 3.0334154182653303e-05,
+        "res_y": 3.0334154182653303e-05,
+        "dtype": "uint16"
+      },
+      "fetch_meta": {
+        "crs": "EPSG:32615",
+        "width": 1024,
+        "height": 1170,
+        "count": 4,
+        "res_x": 3.0,
+        "res_y": 3.0,
+        "dtype": "uint16"
+      },
+      "search_candidate_count": 6,
+      "ranked_candidate_count": 1,
+      "attempt_count": 1,
+      "best_item_id_summary": "20170831_161733_1044"
+    }
+  ]
+}

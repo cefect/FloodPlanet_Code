@@ -1,224 +1,117 @@
-# Planet Batch Fetch Plan
+# FloodPlanet PS Match-Fetch Revision Plan
 
 ## Goal
+- revise the fetch-match workflow so it can accept near-complete scenes (`coverage_ratio >= 0.90`) and recover additional high-confidence matches without losing the current matched set
+- publish a master 1:1 match index at [master_match.tsv](/workspace/fetch/PS/master_match.tsv)
 
-Implement the logic from [planet_sdk_orders_match_search_poc.ipynb](/workspace/fetch/PS/planet_sdk_orders_match_search_poc.ipynb) as a readable Python script that runs against every tile in [stac_catalog.geojson](/workspace/stac_catalog.geojson).
+## Current Review
+- current `_outputs` contain `105` chip summaries and `24` current workflow matches
+- two failure modes dominate the requested misses:
+- `coverage filter miss`: strong near-time candidates were never fetched because they were just below full coverage
+- `threshold miss`: fetched candidates are visually and radiometrically close, but fail the current hard quadrant thresholds
 
-The first implementation should stay simple:
+## Requested Chip Findings
+- `US-Alabama | NAL_16_10`: current best full-coverage scene is poor (`+48.6 h`, `quad_corr=0.388`), but the raw search manifest contains a much better near-time partial candidate at `coverage_ratio=0.965` and `+0.03 h`; this is primarily a coverage-filter problem
+- `US-Dakota | RRN_33_21`: same pattern; current full-coverage attempts are poor, while the raw search manifest contains a `coverage_ratio=0.992` candidate at `+0.03 h`; this is also a coverage-filter problem
+- `US-Carolina | FLO_40_23`: already fetched the right near-time full-coverage scene, but current thresholds are too strict (`quad_corr=0.874`, `quad_ssim=0.759`, `mean_corr=0.983`, `mean_mae=7.05`)
+- `US-Carolina | FLO_48_43`: near miss on the current quadrant rule (`quad_corr=0.930`, `quad_ssim=0.884`, `mean_corr=0.991`, `mean_mae=4.33`)
+- `US-Dakota | RRN_34_29`: near miss on the current quadrant rule (`quad_corr=0.934`, `quad_ssim=0.904`, `mean_corr=0.994`, `mean_mae=3.65`)
+- `US-Dakota | RRN_34_52`: near miss on the current quadrant rule (`quad_corr=0.925`, `quad_ssim=0.900`, `mean_corr=0.980`, `mean_mae=5.12`)
+- `US-Kansas | USA_29_9`: best fetched candidate is rank `2`, not rank `1`; the current stopping logic finds it, but the thresholds still reject it (`quad_corr=0.934`, `quad_ssim=0.883`, `mean_corr=0.994`, `mean_mae=4.80`)
+- `US-Kansas | USA_31_6`: near miss (`quad_corr=0.936`, `quad_ssim=0.888`, `mean_corr=0.994`, `mean_mae=4.52`)
+- `US-Kansas | USA_33_26`: near miss (`quad_corr=0.915`, `quad_ssim=0.845`, `mean_corr=0.989`, `mean_mae=5.47`)
+- `US-Dakota | RRN_101_35`: already matches under the current workflow
 
-- single-process by default
-- minimal optimization
-- no plotting
-- explicit progress reporting
-- file logging
-- easy to inspect outputs and rerun per chip
+## Workflow Changes
+- keep `_1_fetch_ps_chip_manifest` as the raw inventory step
+- revise `_2_fetch_match` so the ranking pool is `has_target_asset == True` and `coverage_ratio >= 0.90`, not `covers_chip == True`
+- keep ordering by nearest time first, then higher coverage, then stable acquisition/item ordering
+- carry `coverage_ratio` and `covers_chip` through the whole fetch loop, diagnostics, summaries, and `master_match.tsv`
+- keep match determination fully dynamic: every `_2_fetch_match` run should always re-read the ranked candidates and re-calculate the compare metrics and final best match from the current settings
+- only the fetch/download step should be skipped when the raster payload already exists locally
 
-## Proposed Files
+## Current Runtime Note
+- the implemented workflow already re-runs the compare step when a tile exists locally; the current skip is only at the Orders/download step
+- the refactor should preserve that behavior and make it explicit in the workflow design so there is no notion of a cached final match decision
 
-- `fetch/PS/planet_sdk_orders_match_search_batch.py`
-  Purpose: main batch script with CLI entrypoint
-- `fetch/coms.py`
-  Purpose: small shared logger helper for console + file logging
+## Orders Cache Plan
+- add an explicit fetch cache rooted at `_outputs/_cache` by default
+- cache only the fetched raster payloads and their minimal fetch provenance; do not cache match decisions
+- cache should sit between the Data API search manifest and the Orders API request
+- `_2_fetch_match` should still rank and re-evaluate candidates every run, but when it needs a tile it should:
+- build a cache key for the candidate fetch
+- check the cache first
+- if cached, symlink the cached raster into the chip output directory and continue with compare
+- if not cached, submit/download once into the cache, then symlink into the chip output directory and continue with compare
 
-## Script Contract
-
-### CLI
-
-The script should expose a runnable CLI with the standard project pattern:
-
-- `main_planet_sdk_orders_match_search_batch(...)` near the top
-- `_parse_arguments()` as the last function
-- `if __name__ == "__main__":` block that calls `_parse_arguments()` and passes results into `main_planet_sdk_orders_match_search_batch(...)`
-
-Initial CLI arguments:
-
-- `--index-fp`
-  Default: `/workspace/stac_catalog.geojson`
-- `--out-dir`
-  Default: `/_outputs`
-- `--overwrite`
-  Default: false
-- `--event`
-  Optional event filter for smaller reruns
-- `--chip-id`
-  Optional chip filter for debugging one chip
-- `--search-limit`
-  Default: modest value like `50`
-- `--poll-delay-seconds`
-  Default: `10`
-- `--poll-max-attempts`
-  Default: `180`
-
-## Inputs
-
-- [stac_catalog.geojson](/workspace/stac_catalog.geojson)
-  Required fields: `Event`, `Chip_ID`, `PS_datetime`, `geometry`
-- [fetch/my_secrets.py](/workspace/fetch/my_secrets.py)
-  Use this to load `PL_API_KEY`
-
-## Output Layout
-
-Root output directory:
-
-- `/_outputs` by default
-
-Per ordered Planet item:
-
-- `<out_dir>/<event>/<chip_id>/<item_id>.tif`
-- `<out_dir>/<event>/<chip_id>/<item_id>.manifest.json`
-
-Per chip summary:
-
-- `<out_dir>/<event>/<chip_id>/summary.csv`
-
-Run-level logs:
-
-- `<out_dir>/logs/<run_name>.log`
-
-## Planned Flow
-
-### 1. Setup
-
-- load secrets with `fetch.my_secrets.load_planet_secrets()`
-- configure logger with console + file handlers
-- read the flat catalog index with geopandas
-- filter by `event` and/or `chip_id` if requested
-- assert the required columns are present
-
-### 2. Per-chip context
-
-For each catalog row:
-
-- read `Event`, `Chip_ID`, `PS_datetime`, and `geometry`
-- convert `PS_datetime` to UTC
-- define the search window as `timestamp +/- 24 hours`
-- convert the chip polygon to GeoJSON for the Planet geometry filter
-- create the chip output directory
-
-### 3. Search
-
-Use the same core search pattern already proven in the notebook:
-
-- item type: `PSScene`
-- geometry filter on the chip polygon
-- date range filter on the `PS_datetime +/- 24h` window
-- no instrument restriction for now
-- search all available PS sensors
-- require permission filter
-
-### 4. Candidate filtering
-
-For each returned scene:
-
-- inspect its asset list
-- require `ortho_analytic_4b_sr`
-- require complete coverage of the chip
-
-The coverage rule should match the notebook:
-
-- convert item geometry to shapely
-- keep only scenes where `item_geom.buffer(1e-12).covers(chip_geom)` is true
-
-This is intentionally strict and excludes partial scenes.
-
-### 5. Ordering and download
-
-For each eligible item:
-
-- order only the minimal server-side product needed
-- keep output as close to server-side truth as possible
-- do not normalize, rescale, or otherwise post-process the raster
-- prefer a direct clipped SR asset order rather than any extra raster transforms
-
-Initial order settings:
-
-- item type: `PSScene`
-- asset key: `ortho_analytic_4b_sr`
-- product bundle: `analytic_sr_udm2`
-- file format: `COG`
-- no harmonization in the first batch script
-
-### 6. Per-item manifest
-
-Write a JSON manifest beside each raster with:
-
-- `event`
-- `chip_id`
+## Cache Key
+- use a liberal cache key derived from the candidate fetch request rather than the final chip output path
+- start from fields already present in the search manifest and per-item manifest:
 - `item_id`
-- `acquired`
-- `time_delta_hours`
-- `instrument`
+- `chip_id`
+- `event`
 - `asset_key`
-- `order_id`
-- `order_state`
-- `output_raster`
-- `chip_bbox_coverage_ratio`
-- `covers_chip`
-- `search_window_start`
-- `search_window_end`
+- `product_bundle`
+- `file_format`
+- clipped AOI geometry
+- probe result from current `_outputs`: fetched rasters are consistently named `{item_id}.tif`, but `item_id` is not globally unique across chips
+- current inventory has `238` fetched rasters but only `225` unique `item_id` values, so `item_id.tif` alone is not safe as the cache key
+- duplicate `item_id` cases occur because the same source scene is clipped against different chips and therefore produces different raster payloads
+- preferred implementation: hash a canonical JSON payload of those fields and use that as the cache directory/file stem
+- if an equivalent stable key is already present in the manifest path or order request inputs, reuse it instead of introducing a second identifier
+- practical recommendation: keep `{item_id}.tif` as the cache filename inside a per-key directory, but use a cache key built from at least `item_id + chip_id + event + asset_key` or, preferably, the full canonical clipped-order payload including AOI
 
-### 7. Per-chip summary table
+## Cache Layout
+- default cache root: `_outputs/_cache`
+- one cache entry per candidate fetch request
+- each entry should hold:
+- cached raster
+- a small cache manifest with the fields used to build the key
+- optional link back to the originating Planet item/order metadata
+- chip output directories should hold symlinks to the cached raster, not duplicate copies
+- practical recommendation from the current file layout:
+- `_outputs/_cache/<cache_key>/<item_id>.tif`
+- `_outputs/_cache/<cache_key>/cache_manifest.json`
 
-Write one `summary.csv` per chip documenting the flow:
+## Cache Migration
+- add a one-time migration utility step for existing outputs
+- scan `out_dir` for previously fetched `.tif` files and their sidecar item manifests
+- rebuild the cache key from the existing manifest contents
+- move the raster into `_outputs/_cache`
+- replace the original chip-local raster with a symlink to the cache target
+- leave match diagnostics and chip summaries in place; only migrate the raster storage layer
 
-- `event`
-- `chip_id`
-- `reference_datetime`
-- `item_id`
-- `acquired`
-- `instrument`
-- `has_target_asset`
-- `covers_chip`
-- `coverage_ratio`
-- `eligible`
-- `order_submitted`
-- `order_id`
-- `order_state`
-- `downloaded`
-- `raster_fp`
-- `manifest_fp`
-- `note`
+## Matching Revision
+- keep the current strict rule as `match_rule=strict`; this preserves all current positives
+- add a second `match_rule=relaxed_masked` path for candidates with `coverage_ratio >= 0.90`
+- in both rules, compare on a common valid mask after warping to the FloodPlanet grid; pixels outside the overlap mask must be ignored consistently in all band and quadrant calculations
+- keep the quadrant comparison, but stop using the current rule as a single hard gate
+- use a two-tier decision:
+- `strict`: current thresholds unchanged
+- `relaxed_masked`: lower the quadrant thresholds and rely more on the radiometric agreement terms (`mean_corr`, `mean_mae`) for near-time candidates
+- calibrate the relaxed thresholds against the current `_outputs` so all current matches stay matched and the requested near-miss chips above are included
+- log which rule passed each accepted match so the relaxed set can be audited separately
 
-This table should include rows for rejected candidates too, not just downloaded items.
+## Calibration Target
+- preserve all `24` current matches under the `strict` rule
+- add the requested chips by two mechanisms:
+- `NAL_16_10`, `RRN_33_21`: include by admitting `coverage_ratio >= 0.90` candidates and comparing on the overlap mask
+- `FLO_40_23`, `FLO_48_43`, `RRN_34_29`, `RRN_34_52`, `USA_29_9`, `USA_31_6`, `USA_33_26`: include by relaxing the quadrant acceptance logic while keeping the radiometric checks strong
+- treat `RRN_101_35` as an existing positive control during calibration
 
-## Suggested Function Layout
+## Outputs
+- update [master_match.tsv](/workspace/fetch/PS/master_match.tsv) as the workflow-level 1:1 match index
+- keep the tracking table minimal:
+- event, chip id, item id, instrument
+- selection reason, current workflow matched flag, candidate rank
+- coverage ratio, full/partial coverage flag
+- reference capture timestamp, fetch capture timestamp, time delta
+- reference path, fetch raster path, fetch manifest path, diagnostics path
 
-Use numbered major steps to keep the script easy to follow:
-
-- `main_planet_sdk_orders_match_search_batch(...)`
-- `_1_read_index(...)`
-- `_2_prepare_chip_context(...)`
-- `_3_search_candidates(...)`
-- `_4_build_candidate_table(...)`
-- `_5_filter_eligible_candidates(...)`
-- `_6_order_and_download_candidate(...)`
-- `_7_write_manifest(...)`
-- `_8_write_chip_summary(...)`
-- `_parse_arguments()`
-
-## Logging And Progress
-
-Keep the logging readable and short:
-
-- one run-level logger configured near the entrypoint
-- `INFO` for chip start/end and final counts
-- `DEBUG` for search window, filter counts, order ids, and download paths
-
-Console progress should be simple:
-
-- overall chip counter, e.g. `12/366`
-- current `event/chip_id`
-- eligible scene count
-- download result summary
-
-
-## Open Questions
-
-- Should `out_dir` remain the absolute `/_outputs`, or should it be rooted under `/workspace/_outputs` for easier container writes?
-   - use relative path here (e.g. `./_outputs`) 
-- For chips with multiple eligible scenes, should the first implementation fetch all eligible scenes or cap the count per chip?
-    - cap at 10 per chip (add a `--per-chip-limit` argument)
-- Should the batch script reuse existing downloads by searching the output tree, or only skip exact target files when `overwrite=False`?
-    - only skip when overwrite=False and target raster file already exists
-- Is `analytic_sr_udm2` the correct first-pass bundle for this workflow, or should the script order a narrower bundle if the extra assets are not needed?
-    - I think thats right... we only want 'ortho_analytic_4b_sr'
+## Implementation Sequence
+- refactor candidate ranking in `coms.py` to admit `coverage_ratio >= 0.90`
+- refactor the compare step to build and reuse one common overlap mask for all metrics
+- add the dual-rule match decision and emit `match_rule`
+- update per-chip summary and diagnostics schemas
+- add a workflow step or post-step update that rebuilds `master_match.tsv` from the finalized outputs
+- rerun on the reviewed chips first, then rerun the US subset

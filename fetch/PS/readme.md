@@ -8,7 +8,13 @@ this replicates what was done originally by JJ using planetExplorer (website)
 - WSL data store: `/home/cefect/LS/10_IO/2501_NSFc/zhangFloodPlanet2025`
 - original Zenodo page: `https://zenodo.org/records/15238572`
 - original paper: `https://spj.science.org/doi/10.34133/remotesensing.0575`
+- UA path from rohit: `[minnow]:/media/mule/Projects/NASA/CSDAP/Data/Raw_Planet_imgs_for_FloodPlanet`
 
+
+## rsync UA data store
+gave up on this... nasty VPN wsl tunnel issue. 
+WinSCP too slow
+using globus
 
 ## notes on PS tiles shipped with FloodPLanet dataset
 **copied from USFloods_inference**
