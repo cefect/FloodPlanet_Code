@@ -429,16 +429,19 @@ def resolve_reference_fp(chip_context, path_d):
 
 
 def rank_fetch_match_candidates(summary_df, search_d):
-    """Rank the raw search manifest rows for the fetch-match loop."""
+    """Rank search rows whose asset covers enough of the chip for matching."""
     if summary_df.empty:
         return summary_df.copy()
+    min_coverage = float(search_d.get("candidate_min_coverage_ratio", 1.0))
+    coverage_s = summary_df["coverage_ratio"].fillna(0.0).astype(float)
     candidate_df = summary_df.loc[
-        summary_df["has_target_asset"].fillna(False) & summary_df["covers_chip"].fillna(False)
+        summary_df["has_target_asset"].fillna(False) & (coverage_s >= min_coverage)
     ].copy()
     if candidate_df.empty:
         return candidate_df
     candidate_df = candidate_df.sort_values(
-        ["time_delta_hours", "acquired", "item_id"],
+        ["time_delta_hours", "coverage_ratio", "acquired", "item_id"],
+        ascending=[True, False, True, True],
         kind="stable",
     ).head(int(search_d["chip_search_max"])).reset_index(drop=True)
     candidate_df["match_candidate_rank"] = np.arange(1, len(candidate_df) + 1)

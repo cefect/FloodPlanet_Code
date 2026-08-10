@@ -5,6 +5,7 @@ search_limit: 50
 lower_window_hours: 72
 upper_window_hours: 72
 chip_search_max: 10
+candidate_min_coverage_ratio: 0.90
 poll_delay_seconds: 10
 poll_max_attempts: 180
 compare_percentile_low: 2

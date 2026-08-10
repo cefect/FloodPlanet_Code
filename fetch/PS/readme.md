@@ -48,7 +48,7 @@ event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US
 snakemake --config chip_ids=COL_23_11
 
 # US event subset
-snakemake --config event_ids="$event_ids"
+snakemake --config event_ids="$event_ids" --cores 6
 ```
 
 Invoke each step-specific `_all` target like this:
@@ -65,7 +65,7 @@ snakemake --config chip_ids="$chip_ids" _1_fetch_ps_chip_manifest_all
 snakemake --config chip_ids="$chip_ids" _2_fetch_match_all
 
 # step 3: combined summary
-snakemake --config chip_ids="$chip_ids" _3_concat_chip_summaries_all
+snakemake -n --config chip_ids="$chip_ids" _3_concat_chip_summaries_all
 ```
 
 

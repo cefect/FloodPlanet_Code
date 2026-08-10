@@ -68,11 +68,20 @@ summary_fp_l = expand(
     chip_id=target_d["Chip_ID"],
 )
 concat_summary_fp = str(OUT_DIR / "summary_all.csv")
+match_plot_fp_l = expand(
+    str(OUT_DIR / "{event}" / "{chip_id}" / "match_plot.png"),
+    zip,
+    event=target_d["Event"],
+    chip_id=target_d["Chip_ID"],
+)
+match_report_fp = str(OUT_DIR / "match_report.md")
 
 
 rule all:
     input:
-        concat_summary_fp
+        summary=concat_summary_fp,
+        diagnostics=match_diagnostics_fp_l,
+        match_report=match_report_fp
     default_target: True
 
 
@@ -122,6 +131,7 @@ rule _2_fetch_match:
         tmpdir=str(TMPDIR),
         floodplanet_root=str(config["floodplanet_root"]),
         chip_search_max=int(config["chip_search_max"]),
+        candidate_min_coverage_ratio=float(config["candidate_min_coverage_ratio"]),
         search_limit=int(config["search_limit"]),
         lower_window_hours=int(config["lower_window_hours"]),
         upper_window_hours=int(config["upper_window_hours"]),
@@ -177,3 +187,42 @@ rule _3_concat_chip_summaries:
 rule _3_concat_chip_summaries_all:
     input:
         concat_summary_fp
+
+
+rule _4_plot_match_chip:
+    input:
+        match_diagnostics_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json")
+    output:
+        plot_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_plot.png")
+    log:
+        str(OUT_DIR / "{event}" / "{chip_id}" / "_4_plot_match_chip.log")
+    params:
+        floodplanet_root=str(config["floodplanet_root"]),
+        logging_level="DEBUG"
+    script:
+        "scripts/_4_plot_match_chip.py"
+
+
+rule _4_plot_match_chips_all:
+    input:
+        match_plot_fp_l
+
+
+rule _4_match_report:
+    input:
+        plot_fp_l=match_plot_fp_l,
+        summary_fp_l=summary_fp_l
+    output:
+        report_fp=match_report_fp
+    log:
+        str(OUT_DIR / "match_report.log")
+    params:
+        out_dir=str(OUT_DIR),
+        title="PlanetScope match report"
+    script:
+        "scripts/_4_match_report.py"
+
+
+rule _4_match_report_all:
+    input:
+        match_report_fp

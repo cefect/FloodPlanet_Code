@@ -1,7 +1,7 @@
 name: floodplanet_compose
 services:
   dev:
-    image: cefect/usf:dev-v3.6
+    image: cefect/usf:dev-v4.0
     volumes:
       - ../:/workspace:delegated
       - /home/cefect/LS/10_IO/2501_NSFc:/home/cefect/LS/10_IO/2501_NSFc:delegated
@@ -14,7 +14,7 @@ services:
     tty: true
     stdin_open: true
     cpus: 6
-    mem_limit: 8g
+    mem_limit: 12g
     # deploy:
     #   resources:
     #     reservations:

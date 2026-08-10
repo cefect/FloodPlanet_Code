@@ -32,6 +32,7 @@ def main_2_fetch_match(snakemake):
         "lower_window_hours": int(snakemake.params.lower_window_hours),
         "upper_window_hours": int(snakemake.params.upper_window_hours),
         "chip_search_max": int(snakemake.params.chip_search_max),
+        "candidate_min_coverage_ratio": float(snakemake.params.candidate_min_coverage_ratio),
     }
     planet_d = {
         "item_type": "PSScene",
@@ -64,7 +65,7 @@ def main_2_fetch_match(snakemake):
 
     logger.info(f"fetch-match phase for {chip_context['event']}/{chip_context['chip_id']}")
     logger.info(
-        f"ranked {len(ranked_df):,} full-coverage candidates from "
+        f"ranked {len(ranked_df):,} coverage-qualified candidates from "
         f"{len(summary_df):,} returned scenes for {chip_context['event']}/{chip_context['chip_id']}"
     )
     if not ranked_df.empty:
