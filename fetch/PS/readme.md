@@ -35,38 +35,7 @@ could do something skinnier.. but this should work fine.
 
 ## fetching PSScene tiles
 
-The snakemake workflow runs the batch Planet fetch against [`/workspace/stac_catalog.geojson`](/workspace/stac_catalog.geojson). The step-1 manifest phase inventories all `ortho_analytic_4b_sr` scenes intersecting each chip in the configured search window, and step 2 loops through the ranked full-coverage candidates until one fetched tile matches the original FloodPlanet PS chip. Step 3 concatenates the chip summaries. Shared backend helpers live in [`smk/scripts/coms.py`](/workspace/smk/scripts/coms.py). Outputs are structured as `<out_dir>/<event>/<chip_id>/`.
-
-The preferred entrypoint is the snakemake workflow in [`smk/snakefile`](/workspace/smk/snakefile). The config is in [`smk/config.yaml`](/workspace/smk/config.yaml), and `snakemake --config` accepts `chip_ids` and `event_ids` as comma-separated subsets.
-
-```bash
-cd /workspace
-export SNAKEMAKE_PROFILE=/workspace/smk/profiles/local
-event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
-
-# one-chip proof
-snakemake --config chip_ids=COL_23_11
-
-# US event subset
-snakemake --config event_ids="$event_ids" --cores 6
-```
-
-Invoke each step-specific `_all` target like this:
-
-```bash
-cd /workspace
-export SNAKEMAKE_PROFILE=/workspace/smk/profiles/local
-chip_ids="COL_23_11"
-
-# step 1: search manifests
-snakemake --config chip_ids="$chip_ids" _1_fetch_ps_chip_manifest_all
-
-# step 2: fetch and match
-snakemake --config chip_ids="$chip_ids" _2_fetch_match_all
-
-# step 3: combined summary
-snakemake -n --config chip_ids="$chip_ids" _3_concat_chip_summaries_all
-```
+The Snakemake workflow documentation and current run commands now live in [`/workspace/smk/readme.md`](/workspace/smk/readme.md).
 
 
 ## results notebook

@@ -1,4 +1,5 @@
 from pathlib import Path
+import hashlib
 import tempfile
 
 import geopandas as gpd
@@ -8,6 +9,11 @@ from snakemake.logging import logger
 
 SNAKEFILE_DIR = Path(workflow.basedir)
 configfile: str(SNAKEFILE_DIR / "config.yaml")
+
+
+wildcard_constraints:
+    event="[^/]+",
+    chip_id="[^/]+"
 
 
 def _parse_id_values(value):
@@ -21,20 +27,77 @@ def _parse_id_values(value):
     return value_l
 
 
+def _event_seed(event):
+    digest = hashlib.sha256(f"{SAMPLE_SEED}:{event}".encode("utf-8")).hexdigest()
+    return int(digest[:8], 16)
+
+
+def _spatial_strata(event_gdf):
+    metric_gdf = event_gdf.to_crs(epsg=3857) if event_gdf.crs is not None else event_gdf
+    centroid_s = metric_gdf.geometry.centroid
+    x_s = pd.Series([geom.x for geom in centroid_s], index=event_gdf.index)
+    y_s = pd.Series([geom.y for geom in centroid_s], index=event_gdf.index)
+    x_mid = x_s.median()
+    y_mid = y_s.median()
+    dist_s = ((x_s - x_mid) ** 2 + (y_s - y_mid) ** 2) ** 0.5
+    center_threshold = dist_s.quantile(0.20)
+    label_l = []
+    for idx in event_gdf.index:
+        if dist_s.loc[idx] <= center_threshold:
+            label_l.append("center")
+        else:
+            ns = "n" if y_s.loc[idx] >= y_mid else "s"
+            ew = "e" if x_s.loc[idx] >= x_mid else "w"
+            label_l.append(f"{ns}{ew}")
+    return pd.Series(label_l, index=event_gdf.index)
+
+
+def _select_event_sample(event_gdf):
+    event_gdf = event_gdf.sort_values("Chip_ID").copy()
+    sample_n = min(SAMPLE_SIZE, len(event_gdf))
+    if len(event_gdf) <= sample_n:
+        sample_gdf = event_gdf.copy()
+        sample_gdf["sample_stratum"] = "all"
+    else:
+        seed = _event_seed(event_gdf["Event"].iloc[0])
+        strata_s = _spatial_strata(event_gdf)
+        selected_idx_l = []
+        for i, label in enumerate(["center", "nw", "ne", "sw", "se"]):
+            label_gdf = event_gdf.loc[strata_s == label]
+            if label_gdf.empty or len(selected_idx_l) >= sample_n:
+                continue
+            selected_idx = label_gdf.sample(n=1, random_state=seed + i).index[0]
+            if selected_idx not in selected_idx_l:
+                selected_idx_l.append(selected_idx)
+        fill_gdf = event_gdf.drop(index=selected_idx_l)
+        fill_n = min(sample_n - len(selected_idx_l), len(fill_gdf))
+        if fill_n > 0:
+            selected_idx_l.extend(fill_gdf.sample(n=fill_n, random_state=seed + 99).index.tolist())
+        sample_gdf = event_gdf.loc[selected_idx_l].copy()
+        sample_gdf["sample_stratum"] = strata_s.loc[selected_idx_l].values
+    sample_gdf["sample_order"] = range(1, len(sample_gdf) + 1)
+    return sample_gdf
+
+
 INDEX_FP = Path(config["index_fp"])
 OUT_DIR = Path(config["out_dir"])
+CACHE_DIR = Path(config.get("cache_dir") or (OUT_DIR / ".cache"))
 TMPDIR = Path(tempfile.gettempdir())
 CHIP_ID_L = _parse_id_values(config.get("chip_ids", []))
 EVENT_ID_L = _parse_id_values(config.get("event_ids", []))
+SAMPLE_SIZE = int(config.get("event_sample_size", 5))
+SAMPLE_SEED = int(config.get("event_sample_seed", 2501))
+MAX_SEARCH_COUNT = int(config.get("max_search_count", config.get("chip_search_max", 10)))
 logger.info(f"loading chip index from {INDEX_FP}")
 logger.info(f"writing outputs under {OUT_DIR}")
+logger.info(f"using fetch cache under {CACHE_DIR}")
 logger.info(f"using system tmpdir {TMPDIR}")
 if EVENT_ID_L:
     logger.info(f"event_ids filter: {','.join(EVENT_ID_L)}")
 if CHIP_ID_L:
     logger.info(f"chip_ids filter: {','.join(CHIP_ID_L)}")
 
-index_gdf = gpd.read_file(INDEX_FP)[["Event", "Chip_ID"]].drop_duplicates().copy()
+index_gdf = gpd.read_file(INDEX_FP)[["Event", "Chip_ID", "PS_datetime", "geometry"]].drop_duplicates(subset=["Event", "Chip_ID"]).copy()
 if EVENT_ID_L:
     index_gdf = index_gdf.loc[index_gdf["Event"].isin(EVENT_ID_L)].copy()
 if CHIP_ID_L:
@@ -42,7 +105,16 @@ if CHIP_ID_L:
 assert not index_gdf.empty, "No chips selected from the snakemake config"
 logger.info(f"selected {len(index_gdf):,} chip(s) for this run")
 
+event_sample_gdf = pd.concat(
+    [_select_event_sample(event_gdf) for _, event_gdf in index_gdf.groupby("Event", sort=True)],
+    ignore_index=True,
+)
+event_sample_df = event_sample_gdf[["Event", "Chip_ID", "PS_datetime", "sample_order", "sample_stratum"]].copy()
+logger.info(f"selected {len(event_sample_df):,} sample chip(s) across {event_sample_df['Event'].nunique():,} event(s)")
+
 target_d = index_gdf.sort_values(["Event", "Chip_ID"]).to_dict("list")
+event_sample_fp = str(OUT_DIR / "event_sample.tsv")
+
 search_manifest_fp_l = expand(
     str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json"),
     zip,
@@ -79,10 +151,65 @@ match_report_fp = str(OUT_DIR / "match_report.md")
 
 rule all:
     input:
+        event_sample=event_sample_fp,
         summary=concat_summary_fp,
         diagnostics=match_diagnostics_fp_l,
         match_report=match_report_fp
     default_target: True
+
+
+rule _0_select_event_samples:
+    output:
+        event_sample_fp
+    params:
+        index_fp=str(INDEX_FP),
+        event_ids=",".join(EVENT_ID_L),
+        chip_ids=",".join(CHIP_ID_L),
+        sample_size=SAMPLE_SIZE,
+        sample_seed=SAMPLE_SEED,
+        sample_count=len(event_sample_df)
+    run:
+        output_fp = Path(output[0])
+        output_fp.parent.mkdir(parents=True, exist_ok=True)
+        event_sample_df.to_csv(output_fp, index=False, sep="\t")
+        logger.info(f"wrote event sample table to {output_fp}")
+
+
+rule _3_fetch_chip_match:
+    input:
+        search_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json")
+    output:
+        summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv"),
+        match_diagnostics_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json")
+    log:
+        str(OUT_DIR / "{event}" / "{chip_id}" / "_3_fetch_chip_match.log")
+    params:
+        index_fp=str(INDEX_FP),
+        out_dir=str(OUT_DIR),
+        cache_dir=str(CACHE_DIR),
+        tmpdir=str(TMPDIR),
+        floodplanet_root=str(config["floodplanet_root"]),
+        chip_search_max=MAX_SEARCH_COUNT,
+        candidate_min_coverage_ratio=float(config["candidate_min_coverage_ratio"]),
+        search_limit=int(config["search_limit"]),
+        lower_window_hours=int(config["lower_window_hours"]),
+        upper_window_hours=int(config["upper_window_hours"]),
+        poll_delay_seconds=int(config["poll_delay_seconds"]),
+        poll_max_attempts=int(config["poll_max_attempts"]),
+        compare_percentile_low=float(config["compare_percentile_low"]),
+        compare_percentile_high=float(config["compare_percentile_high"]),
+        compare_quadrants=int(config["compare_quadrants"]),
+        compare_min_valid_fraction=float(config["compare_min_valid_fraction"]),
+        match_mean_quad_corr_min=float(config["match_mean_quad_corr_min"]),
+        match_min_quad_corr_min=float(config["match_min_quad_corr_min"]),
+        match_mean_quad_ssim_min=float(config["match_mean_quad_ssim_min"]),
+        match_mean_mae_max=float(config["match_mean_mae_max"]),
+        compare_resampling=str(config["compare_resampling"]),
+        write_compare_debug=bool(config["write_compare_debug"]),
+        fail_on_no_match=True,
+        logging_level="DEBUG"
+    script:
+        "scripts/_2_fetch_match.py"
 
 
 rule _1_fetch_ps_chip_manifest_all:
@@ -109,47 +236,6 @@ rule _1_fetch_ps_chip_manifest:
         logging_level="DEBUG"
     script:
         "scripts/_1_fetch_ps_chip_manifest.py"
-
-
-rule _2_fetch_match_all:
-    input:
-        summary_fp_l,
-        match_diagnostics_fp_l
-
-
-rule _2_fetch_match:
-    input:
-        search_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json")
-    output:
-        summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv"),
-        match_diagnostics_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json")
-    log:
-        str(OUT_DIR / "{event}" / "{chip_id}" / "_2_fetch_match.log")
-    params:
-        index_fp=str(INDEX_FP),
-        out_dir=str(OUT_DIR),
-        tmpdir=str(TMPDIR),
-        floodplanet_root=str(config["floodplanet_root"]),
-        chip_search_max=int(config["chip_search_max"]),
-        candidate_min_coverage_ratio=float(config["candidate_min_coverage_ratio"]),
-        search_limit=int(config["search_limit"]),
-        lower_window_hours=int(config["lower_window_hours"]),
-        upper_window_hours=int(config["upper_window_hours"]),
-        poll_delay_seconds=int(config["poll_delay_seconds"]),
-        poll_max_attempts=int(config["poll_max_attempts"]),
-        compare_percentile_low=float(config["compare_percentile_low"]),
-        compare_percentile_high=float(config["compare_percentile_high"]),
-        compare_quadrants=int(config["compare_quadrants"]),
-        compare_min_valid_fraction=float(config["compare_min_valid_fraction"]),
-        match_mean_quad_corr_min=float(config["match_mean_quad_corr_min"]),
-        match_min_quad_corr_min=float(config["match_min_quad_corr_min"]),
-        match_mean_quad_ssim_min=float(config["match_mean_quad_ssim_min"]),
-        match_mean_mae_max=float(config["match_mean_mae_max"]),
-        compare_resampling=str(config["compare_resampling"]),
-        write_compare_debug=bool(config["write_compare_debug"]),
-        logging_level="DEBUG"
-    script:
-        "scripts/_2_fetch_match.py"
 
 
 rule _3_concat_chip_summaries:
@@ -211,14 +297,15 @@ rule _4_plot_match_chips_all:
 rule _4_match_report:
     input:
         plot_fp_l=match_plot_fp_l,
-        summary_fp_l=summary_fp_l
+        summary_fp_l=summary_fp_l,
+        event_sample=event_sample_fp
     output:
         report_fp=match_report_fp
     log:
         str(OUT_DIR / "match_report.log")
     params:
         out_dir=str(OUT_DIR),
-        title="PlanetScope match report"
+        title="PlanetScope per-chip match report"
     script:
         "scripts/_4_match_report.py"
 

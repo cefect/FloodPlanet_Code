@@ -1,6 +1,6 @@
 """Common backend helpers for the Planet PS snakemake workflow."""
 
-import asyncio, json, logging, os, shutil, sys, time
+import asyncio, hashlib, json, logging, os, shutil, sys, time
 from pathlib import Path
 
 import geopandas as gpd
@@ -58,6 +58,7 @@ def prepare_chip_context(chip_s, path_d, search_d):
         "end_dt": reference_dt + pd.Timedelta(hours=search_d["upper_window_hours"]),
         "chip_dir": chip_dir,
         "stage_root": path_d["tmpdir"] / "planet_fetch_stage" / chip_s["Event"] / chip_s["Chip_ID"],
+        "cache_dir": Path(path_d.get("cache_dir", path_d["out_dir"] / ".cache")),
         "search_manifest_fp": chip_dir / "chip_search_manifest.json",
         "search_summary_fp": chip_dir / "chip_search_summary.tsv",
         "match_diagnostics_fp": chip_dir / "match_diagnostics.json",
@@ -79,6 +80,7 @@ def chip_context_from_manifest(manifest_d, path_d):
         "end_dt": pd.Timestamp(chip_context_d["search_window_end"]),
         "chip_dir": chip_dir,
         "stage_root": path_d["tmpdir"] / "planet_fetch_stage" / chip_context_d["event"] / chip_context_d["chip_id"],
+        "cache_dir": Path(path_d.get("cache_dir", path_d["out_dir"] / ".cache")),
         "search_manifest_fp": chip_dir / "chip_search_manifest.json",
         "search_summary_fp": chip_dir / "chip_search_summary.tsv",
         "match_diagnostics_fp": chip_dir / "match_diagnostics.json",
@@ -265,35 +267,140 @@ def pick_primary_raster(item_id, download_path_l, stage_dir):
     return sorted(tif_l)[0]
 
 
+def _json_ready(value):
+    """Convert common numpy/pandas/path values into stable JSON primitives."""
+    if isinstance(value, dict):
+        return {str(k): _json_ready(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_ready(v) for v in value]
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, pd.Timestamp):
+        return value.isoformat()
+    if isinstance(value, (np.integer, np.floating, np.bool_)):
+        return value.item()
+    try:
+        if pd.isna(value):
+            return None
+    except (TypeError, ValueError):
+        pass
+    return value
+
+
+def _row_value(row, key, default=None):
+    value = row.get(key, default)
+    try:
+        if pd.isna(value):
+            return default
+    except (TypeError, ValueError):
+        pass
+    return value
+
+
+def _row_bool(row, key, default=False):
+    value = _row_value(row, key, default)
+    return bool(value) if value is not None else bool(default)
+
+
+def fetch_cache_paths(chip_context, row, planet_d):
+    """Build the cache paths for one clipped Planet order request."""
+    cache_root = Path(chip_context.get("cache_dir") or (chip_context["chip_dir"] / ".cache"))
+    payload_d = {
+        "event": chip_context["event"],
+        "chip_id": chip_context["chip_id"],
+        "item_id": _row_value(row, "item_id"),
+        "geometry_geojson": chip_context["geometry_geojson"],
+        "item_type": planet_d["item_type"],
+        "asset_key": planet_d["asset_key"],
+        "product_bundle": planet_d["product_bundle"],
+        "file_format": planet_d["file_format"],
+    }
+    payload_json = json.dumps(_json_ready(payload_d), sort_keys=True, separators=(",", ":"))
+    cache_key = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()[:24]
+    cache_dir = cache_root / cache_key
+    item_id = str(_row_value(row, "item_id"))
+    return {
+        "cache_key": cache_key,
+        "cache_dir": cache_dir,
+        "raster_fp": cache_dir / f"{item_id}.tif",
+        "manifest_fp": cache_dir / "cache_manifest.json",
+        "payload": payload_d,
+    }
+
+
+def _link_or_copy_raster(src_fp, dst_fp):
+    src_fp = Path(src_fp)
+    dst_fp = Path(dst_fp)
+    dst_fp.parent.mkdir(parents=True, exist_ok=True)
+    if dst_fp.exists() or dst_fp.is_symlink():
+        dst_fp.unlink()
+    try:
+        os.symlink(src_fp, dst_fp)
+        return "symlink"
+    except OSError:
+        shutil.copy2(src_fp, dst_fp)
+        return "copy"
+
+
+def _build_item_manifest(chip_context, row, planet_d, output_d, cache_d, order_id, order_state, download_path_l, note, cache_hit):
+    manifest_d = {
+        "event": chip_context["event"],
+        "chip_id": chip_context["chip_id"],
+        "item_id": _row_value(row, "item_id"),
+        "acquired": _row_value(row, "acquired"),
+        "time_delta_hours": _row_value(row, "time_delta_hours"),
+        "instrument": _row_value(row, "instrument"),
+        "asset_key": planet_d["asset_key"],
+        "order_id": order_id,
+        "order_state": order_state,
+        "output_raster": str(output_d["raster_fp"]) if output_d.get("raster_fp") else None,
+        "chip_bbox_coverage_ratio": _row_value(row, "coverage_ratio"),
+        "covers_chip": _row_bool(row, "covers_chip", False),
+        "search_window_start": chip_context["start_dt"].isoformat(),
+        "search_window_end": chip_context["end_dt"].isoformat(),
+        "download_path_l": [str(Path(p)) for p in download_path_l],
+        "cache_key": cache_d["cache_key"],
+        "cache_raster": str(cache_d["raster_fp"]),
+        "cache_manifest": str(cache_d["manifest_fp"]),
+        "cache_hit": bool(cache_hit),
+        "note": note,
+    }
+    for key in [
+        "reference_time_delta_hours",
+        "selected_event_datetime",
+        "selected_event_time_delta_hours",
+        "selection_mode",
+    ]:
+        value = _row_value(row, key)
+        if value is not None:
+            manifest_d[key] = value
+    return _json_ready(manifest_d)
+
+
 async def order_and_download_chip(chip_context, selected_df, planet_d, logger=None):
-    """Order the selected scenes for one chip, then write per-item outputs."""
+    """Order selected scenes for one chip, caching clipped rasters by request payload."""
     log = logger or logging.getLogger(__name__)
     assert not selected_df.empty, "Expected at least one selected scene"
 
     result_l = []
-    pending_item_id_l = []
+    pending_l = []
     for _, row in selected_df.iterrows():
         output_d = expected_item_outputs(chip_context=chip_context, item_id=row["item_id"])
+        cache_d = fetch_cache_paths(chip_context=chip_context, row=row, planet_d=planet_d)
         if output_d["raster_fp"].exists():
             if not output_d["manifest_fp"].exists():
-                manifest_d = {
-                    "event": chip_context["event"],
-                    "chip_id": chip_context["chip_id"],
-                    "item_id": row["item_id"],
-                    "acquired": row["acquired"],
-                    "time_delta_hours": row["time_delta_hours"],
-                    "instrument": row["instrument"],
-                    "asset_key": planet_d["asset_key"],
-                    "order_id": None,
-                    "order_state": "skipped_existing",
-                    "output_raster": str(output_d["raster_fp"]),
-                    "chip_bbox_coverage_ratio": row.get("coverage_ratio"),
-                    "covers_chip": bool(row.get("covers_chip", False)),
-                    "search_window_start": chip_context["start_dt"].isoformat(),
-                    "search_window_end": chip_context["end_dt"].isoformat(),
-                    "download_path_l": [],
-                    "note": "existing_raster",
-                }
+                manifest_d = _build_item_manifest(
+                    chip_context=chip_context,
+                    row=row,
+                    planet_d=planet_d,
+                    output_d=output_d,
+                    cache_d=cache_d,
+                    order_id=None,
+                    order_state="skipped_existing",
+                    download_path_l=[],
+                    note="existing_raster",
+                    cache_hit=cache_d["raster_fp"].exists(),
+                )
                 write_manifest(manifest_d=manifest_d, manifest_fp=output_d["manifest_fp"])
             result_l.append({
                 "item_id": row["item_id"],
@@ -303,13 +410,45 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                 "downloaded": True,
                 "raster_fp": str(output_d["raster_fp"]),
                 "manifest_fp": str(output_d["manifest_fp"]),
+                "cache_key": cache_d["cache_key"],
+                "cache_hit": cache_d["raster_fp"].exists(),
                 "note": "existing_raster",
             })
-        else:
-            pending_item_id_l.append(row["item_id"])
+            continue
 
-    if not pending_item_id_l:
-        log.debug(f"all requested items already exist for {chip_context['chip_id']}")
+        if cache_d["raster_fp"].exists():
+            link_type = _link_or_copy_raster(src_fp=cache_d["raster_fp"], dst_fp=output_d["raster_fp"])
+            manifest_d = _build_item_manifest(
+                chip_context=chip_context,
+                row=row,
+                planet_d=planet_d,
+                output_d=output_d,
+                cache_d=cache_d,
+                order_id=None,
+                order_state="cache_hit",
+                download_path_l=[],
+                note=f"cache_hit_{link_type}",
+                cache_hit=True,
+            )
+            write_manifest(manifest_d=manifest_d, manifest_fp=output_d["manifest_fp"])
+            result_l.append({
+                "item_id": row["item_id"],
+                "order_submitted": False,
+                "order_id": None,
+                "order_state": "cache_hit",
+                "downloaded": True,
+                "raster_fp": str(output_d["raster_fp"]),
+                "manifest_fp": str(output_d["manifest_fp"]),
+                "cache_key": cache_d["cache_key"],
+                "cache_hit": True,
+                "note": f"cache_hit_{link_type}",
+            })
+            continue
+
+        pending_l.append((row, output_d, cache_d))
+
+    if not pending_l:
+        log.debug(f"all requested items already exist or are cached for {chip_context['chip_id']}")
         return pd.DataFrame(result_l)
 
     stage_dir = chip_context["stage_root"]
@@ -317,6 +456,7 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
         shutil.rmtree(stage_dir)
     stage_dir.mkdir(parents=True, exist_ok=True)
 
+    pending_item_id_l = [row["item_id"] for row, _, _ in pending_l]
     async with Session() as sess:
         orders_client = sess.client("orders")
         request = order_request.build_request(
@@ -349,28 +489,35 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
             )
             download_path_l = await orders_client.download_order(order_id, stage_dir, overwrite=False, progress_bar=False)
             log.debug(f"downloaded {len(download_path_l):,} files into\n    {stage_dir}")
-            for _, row in selected_df.loc[selected_df["item_id"].isin(pending_item_id_l)].iterrows():
-                output_d = expected_item_outputs(chip_context=chip_context, item_id=row["item_id"])
+            for row, output_d, cache_d in pending_l:
+                cache_d["cache_dir"].mkdir(parents=True, exist_ok=True)
                 primary_raster_fp = pick_primary_raster(item_id=row["item_id"], download_path_l=download_path_l, stage_dir=stage_dir)
-                shutil.move(str(primary_raster_fp), str(output_d["raster_fp"]))
-
-                item_manifest_d = {
-                    "event": chip_context["event"],
-                    "chip_id": chip_context["chip_id"],
-                    "item_id": row["item_id"],
-                    "acquired": row["acquired"],
-                    "time_delta_hours": row["time_delta_hours"],
-                    "instrument": row["instrument"],
-                    "asset_key": planet_d["asset_key"],
+                if not cache_d["raster_fp"].exists():
+                    shutil.move(str(primary_raster_fp), str(cache_d["raster_fp"]))
+                elif primary_raster_fp.exists():
+                    primary_raster_fp.unlink()
+                cache_manifest_d = {
+                    "cache_key": cache_d["cache_key"],
+                    "payload": cache_d["payload"],
+                    "raster_fp": str(cache_d["raster_fp"]),
                     "order_id": order_id,
                     "order_state": order_state,
-                    "output_raster": str(output_d["raster_fp"]),
-                    "chip_bbox_coverage_ratio": row.get("coverage_ratio"),
-                    "covers_chip": bool(row.get("covers_chip", False)),
-                    "search_window_start": chip_context["start_dt"].isoformat(),
-                    "search_window_end": chip_context["end_dt"].isoformat(),
                     "download_path_l": [str(Path(p)) for p in download_path_l],
                 }
+                write_manifest(manifest_d=_json_ready(cache_manifest_d), manifest_fp=cache_d["manifest_fp"])
+                link_type = _link_or_copy_raster(src_fp=cache_d["raster_fp"], dst_fp=output_d["raster_fp"])
+                item_manifest_d = _build_item_manifest(
+                    chip_context=chip_context,
+                    row=row,
+                    planet_d=planet_d,
+                    output_d=output_d,
+                    cache_d=cache_d,
+                    order_id=order_id,
+                    order_state=order_state,
+                    download_path_l=download_path_l,
+                    note=f"ordered_{link_type}",
+                    cache_hit=False,
+                )
                 write_manifest(manifest_d=item_manifest_d, manifest_fp=output_d["manifest_fp"])
                 result_l.append({
                     "item_id": row["item_id"],
@@ -380,6 +527,8 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                     "downloaded": True,
                     "raster_fp": str(output_d["raster_fp"]),
                     "manifest_fp": str(output_d["manifest_fp"]),
+                    "cache_key": cache_d["cache_key"],
+                    "cache_hit": False,
                     "note": None,
                 })
             if stage_dir.exists():
@@ -387,26 +536,19 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
             return pd.DataFrame(result_l)
         except Exception as err:
             log.error(f"chip order failed {chip_context['event']}/{chip_context['chip_id']}: {err}")
-            for _, row in selected_df.loc[selected_df["item_id"].isin(pending_item_id_l)].iterrows():
-                output_d = expected_item_outputs(chip_context=chip_context, item_id=row["item_id"])
-                item_manifest_d = {
-                    "event": chip_context["event"],
-                    "chip_id": chip_context["chip_id"],
-                    "item_id": row["item_id"],
-                    "acquired": row["acquired"],
-                    "time_delta_hours": row["time_delta_hours"],
-                    "instrument": row["instrument"],
-                    "asset_key": planet_d["asset_key"],
-                    "order_id": order_id,
-                    "order_state": order_state,
-                    "output_raster": None,
-                    "chip_bbox_coverage_ratio": row.get("coverage_ratio"),
-                    "covers_chip": bool(row.get("covers_chip", False)),
-                    "search_window_start": chip_context["start_dt"].isoformat(),
-                    "search_window_end": chip_context["end_dt"].isoformat(),
-                    "download_path_l": [str(Path(p)) for p in download_path_l],
-                    "note": str(err),
-                }
+            for row, output_d, cache_d in pending_l:
+                item_manifest_d = _build_item_manifest(
+                    chip_context=chip_context,
+                    row=row,
+                    planet_d=planet_d,
+                    output_d={"raster_fp": None, "manifest_fp": output_d["manifest_fp"]},
+                    cache_d=cache_d,
+                    order_id=order_id,
+                    order_state=order_state,
+                    download_path_l=download_path_l,
+                    note=str(err),
+                    cache_hit=False,
+                )
                 write_manifest(manifest_d=item_manifest_d, manifest_fp=output_d["manifest_fp"])
                 result_l.append({
                     "item_id": row["item_id"],
@@ -416,6 +558,8 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
                     "downloaded": False,
                     "raster_fp": None,
                     "manifest_fp": str(output_d["manifest_fp"]),
+                    "cache_key": cache_d["cache_key"],
+                    "cache_hit": False,
                     "note": str(err),
                 })
             return pd.DataFrame(result_l)
@@ -439,8 +583,9 @@ def rank_fetch_match_candidates(summary_df, search_d):
     ].copy()
     if candidate_df.empty:
         return candidate_df
+    time_sort_col = "selected_event_time_delta_hours" if "selected_event_time_delta_hours" in candidate_df.columns else "time_delta_hours"
     candidate_df = candidate_df.sort_values(
-        ["time_delta_hours", "coverage_ratio", "acquired", "item_id"],
+        [time_sort_col, "coverage_ratio", "acquired", "item_id"],
         ascending=[True, False, True, True],
         kind="stable",
     ).head(int(search_d["chip_search_max"])).reset_index(drop=True)
@@ -595,14 +740,18 @@ def update_item_manifest_compare(manifest_fp, compare_result_d, matched):
 
 def build_fetch_match_diagnostics(chip_context, reference_fp, summary_df, ranked_df, attempt_l, compare_d, runtime_seconds):
     """Build the per-chip fetch-match diagnostics payload."""
+    chip_context_out_d = {
+        "event": chip_context["event"],
+        "chip_id": chip_context["chip_id"],
+        "reference_datetime": chip_context["reference_dt"].isoformat(),
+        "search_window_start": chip_context["start_dt"].isoformat(),
+        "search_window_end": chip_context["end_dt"].isoformat(),
+    }
+    for key in ["selected_event_datetime", "sample_chip", "selection_mode"]:
+        if key in chip_context:
+            chip_context_out_d[key] = _json_ready(chip_context[key])
     return {
-        "chip_context": {
-            "event": chip_context["event"],
-            "chip_id": chip_context["chip_id"],
-            "reference_datetime": chip_context["reference_dt"].isoformat(),
-            "search_window_start": chip_context["start_dt"].isoformat(),
-            "search_window_end": chip_context["end_dt"].isoformat(),
-        },
+        "chip_context": chip_context_out_d,
         "reference_fp": str(reference_fp),
         "search_candidate_count": int(len(summary_df)),
         "ranked_candidate_count": int(len(ranked_df)),
@@ -638,6 +787,9 @@ def build_fetch_match_summary(chip_context, reference_fp, summary_df, attempt_l,
         "search_candidates_full_coverage": int((summary_df["has_target_asset"].fillna(False) & summary_df["covers_chip"].fillna(False)).sum()) if not summary_df.empty else 0,
         "attempted_candidates": int(len(attempt_l)),
         "matched": bool(best_attempt_d is not None and best_attempt_d["compare_metrics"].get("matched", False)),
+        "sample_chip": bool(chip_context.get("sample_chip", False)),
+        "selection_mode": chip_context.get("selection_mode", "broad_search"),
+        "selected_event_datetime": _json_ready(chip_context.get("selected_event_datetime")),
         "matched_item_id": None,
         "matched_acquired": None,
         "matched_sensor": None,

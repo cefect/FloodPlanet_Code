@@ -1,6 +1,6 @@
-"""Snakemake script for step 2 per-chip Planet fetch-and-match execution."""
+"""Fetch and match one chip using a resolved event-level acquisition datetime."""
 
-import asyncio, sys, time
+import asyncio, json, sys, time
 from pathlib import Path
 
 import pandas as pd
@@ -13,8 +13,25 @@ if str(SCRIPT_DIR) not in sys.path:
 import coms
 
 
-def main_2_fetch_match(snakemake):
-    """Run the per-chip fetch loop and stop at the first passing spatial match."""
+def _utc_ts(value):
+    ts = pd.Timestamp(value)
+    return ts.tz_localize("UTC") if ts.tzinfo is None else ts.tz_convert("UTC")
+
+
+def _add_selected_event_columns(summary_df, selected_dt):
+    if summary_df.empty:
+        return summary_df
+    acquired_s = pd.to_datetime(summary_df["acquired"], utc=True, errors="coerce")
+    summary_df["reference_time_delta_hours"] = summary_df["time_delta_hours"]
+    summary_df["selected_event_datetime"] = selected_dt.isoformat()
+    summary_df["selected_event_time_delta_hours"] = (
+        (acquired_s - selected_dt).abs().dt.total_seconds() / 3600.0
+    ).round(3)
+    summary_df["selection_mode"] = "resolved_event_datetime"
+    return summary_df
+
+
+def main_3_fetch_resolved_chip(snakemake):
     start = time.time()
     path_d = {
         "index_fp": Path(snakemake.params.index_fp),
@@ -26,13 +43,14 @@ def main_2_fetch_match(snakemake):
     path_d["log_fp"] = Path(snakemake.log[0])
     path_d["log_dir"] = path_d["log_fp"].parent
 
+    selected_window_hours = float(snakemake.params.resolved_search_window_hours)
     search_d = {
         "event": snakemake.wildcards.event,
         "chip_id_l": [snakemake.wildcards.chip_id],
-        "search_limit": int(snakemake.params.search_limit),
-        "lower_window_hours": int(snakemake.params.lower_window_hours),
-        "upper_window_hours": int(snakemake.params.upper_window_hours),
-        "chip_search_max": int(snakemake.params.chip_search_max),
+        "search_limit": int(snakemake.params.resolved_search_limit),
+        "lower_window_hours": selected_window_hours,
+        "upper_window_hours": selected_window_hours,
+        "chip_search_max": int(snakemake.params.resolved_chip_search_max),
         "candidate_min_coverage_ratio": float(snakemake.params.candidate_min_coverage_ratio),
     }
     planet_d = {
@@ -58,19 +76,39 @@ def main_2_fetch_match(snakemake):
     logger = coms.build_logger(path_d=path_d, level=str(snakemake.params.logging_level).upper())
     coms.load_planet_secrets(override=False)
 
-    search_manifest_d = coms.read_manifest(manifest_fp=snakemake.input.search_manifest_fp)
-    chip_context = coms.chip_context_from_manifest(manifest_d=search_manifest_d, path_d=path_d)
-    reference_fp = coms.resolve_reference_fp(chip_context=chip_context, path_d=path_d)
-    summary_df = pd.DataFrame(search_manifest_d.get("summary_rows", []))
-    ranked_df = coms.rank_fetch_match_candidates(summary_df=summary_df.copy(), search_d=search_d)
+    resolution_d = json.loads(Path(snakemake.input.resolution_fp).read_text())
+    assert resolution_d.get("resolved", False), f"Event is not resolved: {snakemake.input.resolution_fp} {resolution_d.get('reason')}"
+    selected_dt = _utc_ts(resolution_d["selected_event_datetime"])
 
-    logger.info(f"fetch-match phase for {chip_context['event']}/{chip_context['chip_id']}")
+    chip_context = coms.load_chip_context(path_d=path_d, search_d=search_d, logger=logger)
+    chip_context["start_dt"] = selected_dt - pd.Timedelta(hours=selected_window_hours)
+    chip_context["end_dt"] = selected_dt + pd.Timedelta(hours=selected_window_hours)
+    chip_context["selected_event_datetime"] = selected_dt.isoformat()
+    chip_context["sample_chip"] = chip_context["chip_id"] in set(resolution_d.get("sample_chips", []))
+    chip_context["selection_mode"] = "resolved_event_datetime"
+
+    reference_fp = coms.resolve_reference_fp(chip_context=chip_context, path_d=path_d)
     logger.info(
-        f"ranked {len(ranked_df):,} coverage-qualified candidates from "
+        f"resolved-event fetch for {chip_context['event']}/{chip_context['chip_id']} "
+        f"around {selected_dt.isoformat()} +/- {selected_window_hours}h"
+    )
+    search_result = asyncio.run(coms.search_candidates(chip_context=chip_context, search_d=search_d, planet_d=planet_d, logger=logger))
+    summary_df = coms.build_candidate_table(
+        chip_context=chip_context,
+        item_l=search_result["item_l"],
+        asset_keys_by_item=search_result["asset_keys_by_item"],
+        planet_d=planet_d,
+    )
+    summary_df = _add_selected_event_columns(summary_df=summary_df, selected_dt=selected_dt)
+    coms.write_manifest(
+        manifest_d=coms.build_chip_search_manifest(chip_context=chip_context, summary_df=summary_df),
+        manifest_fp=chip_context["search_manifest_fp"],
+    )
+    ranked_df = coms.rank_fetch_match_candidates(summary_df=summary_df.copy(), search_d=search_d)
+    logger.info(
+        f"ranked {len(ranked_df):,} resolved-date candidates from "
         f"{len(summary_df):,} returned scenes for {chip_context['event']}/{chip_context['chip_id']}"
     )
-    if not ranked_df.empty:
-        logger.debug(f"ranked candidate ids: {','.join(ranked_df['item_id'].tolist())}")
 
     attempt_l = []
     for _, row in ranked_df.iterrows():
@@ -97,6 +135,9 @@ def main_2_fetch_match(snakemake):
             "acquired": row["acquired"],
             "instrument": row["instrument"],
             "time_delta_hours": row["time_delta_hours"],
+            "reference_time_delta_hours": row.get("reference_time_delta_hours"),
+            "selected_event_datetime": row.get("selected_event_datetime"),
+            "selected_event_time_delta_hours": row.get("selected_event_time_delta_hours"),
             "coverage_ratio": row.get("coverage_ratio"),
             "match_candidate_rank": int(row["match_candidate_rank"]),
             "order_submitted": bool(fetch_row["order_submitted"]),
@@ -128,7 +169,7 @@ def main_2_fetch_match(snakemake):
                 attempt_l.append(attempt_d)
                 logger.info(
                     f"matched {chip_context['event']}/{chip_context['chip_id']} with "
-                    f"{row['item_id']} at rank {int(row['match_candidate_rank'])}"
+                    f"{row['item_id']} at resolved rank {int(row['match_candidate_rank'])}"
                 )
                 break
         attempt_l.append(attempt_d)
@@ -147,33 +188,18 @@ def main_2_fetch_match(snakemake):
         chip_context=chip_context,
         logger=logger,
     )
-    summary_out_df = coms.build_fetch_match_summary(
-        chip_context=chip_context,
-        reference_fp=reference_fp,
-        summary_df=summary_df,
-        attempt_l=attempt_l,
-        runtime_seconds=runtime_seconds,
-    )
     coms.write_chip_summary(
-        summary_df=summary_out_df,
+        summary_df=coms.build_fetch_match_summary(
+            chip_context=chip_context,
+            reference_fp=reference_fp,
+            summary_df=summary_df,
+            attempt_l=attempt_l,
+            runtime_seconds=runtime_seconds,
+        ),
         chip_context=chip_context,
         logger=logger,
     )
 
-    fail_on_no_match = bool(getattr(snakemake.params, "fail_on_no_match", False))
-    matched = bool(summary_out_df.loc[0, "matched"])
-    if fail_on_no_match and not matched:
-        attempted_n = int(summary_out_df.loc[0, "attempted_candidates"])
-        max_search_count = int(snakemake.params.chip_search_max)
-        logger.error(
-            f"no match for {chip_context['event']}/{chip_context['chip_id']} "
-            f"after {attempted_n} candidate attempt(s); max_search_count={max_search_count}"
-        )
-        raise RuntimeError(
-            f"No match for {chip_context['event']}/{chip_context['chip_id']} "
-            f"after {attempted_n} candidate attempt(s); max_search_count={max_search_count}"
-        )
-
 
 if "snakemake" in globals():
-    main_2_fetch_match(snakemake)
+    main_3_fetch_resolved_chip(snakemake)
