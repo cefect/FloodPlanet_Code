@@ -103,6 +103,7 @@ venv.bak/
 
 # Editor settings
 
+.devcontainer/
 *.code-workspace
 .spyderproject
 .spyproject
