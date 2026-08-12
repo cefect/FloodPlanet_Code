@@ -37,33 +37,42 @@ def main_1_fetch_ps_chip_manifest(snakemake):
         "poll_max_attempts": int(snakemake.params.poll_max_attempts),
     }
     logger = coms.build_logger(path_d=path_d, level=str(snakemake.params.logging_level).upper())
-    coms.load_planet_secrets(override=False)
-    chip_context = coms.load_chip_context(path_d=path_d, search_d=search_d, logger=logger)
-    logger.info(f"manifest phase for {chip_context['event']}/{chip_context['chip_id']}")
-    search_result = asyncio.run(coms.search_candidates(chip_context=chip_context, search_d=search_d, planet_d=planet_d, logger=logger))
-    summary_df = coms.build_candidate_table(
-        chip_context=chip_context,
-        item_l=search_result["item_l"],
-        asset_keys_by_item=search_result["asset_keys_by_item"],
-        planet_d=planet_d,
-    )
-    logger.info(
-        f"search returned {len(summary_df):,} scenes with "
-        f"{int(summary_df['covers_chip'].sum()) if not summary_df.empty else 0:,} full-coverage scenes for "
-        f"{chip_context['event']}/{chip_context['chip_id']}"
-    )
-    if not summary_df.empty:
-        logger.debug(f"returned item ids: {','.join(summary_df['item_id'].tolist())}")
-    coms.write_manifest(
-        manifest_d=coms.build_chip_search_manifest(chip_context=chip_context, summary_df=summary_df),
-        manifest_fp=chip_context["search_manifest_fp"],
-    )
-    coms.write_chip_search_summary(
-        chip_search_summary_df=coms.build_chip_search_summary(chip_context=chip_context, summary_df=summary_df),
-        chip_context=chip_context,
-        logger=logger,
-    )
-    logger.info(f"wrote chip search manifest to\n    {chip_context['search_manifest_fp']}")
+    try:
+        logger.info(f"manifest rule log file\n    {path_d['log_fp']}")
+        logger.debug(f"path_d={path_d}")
+        logger.debug(f"search_d={search_d}")
+        logger.debug(f"planet_d={planet_d}")
+        logger.info("loading Planet secrets")
+        coms.load_planet_secrets(override=False)
+        chip_context = coms.load_chip_context(path_d=path_d, search_d=search_d, logger=logger)
+        logger.info(f"manifest phase for {chip_context['event']}/{chip_context['chip_id']}")
+        search_result = asyncio.run(coms.search_candidates(chip_context=chip_context, search_d=search_d, planet_d=planet_d, logger=logger))
+        summary_df = coms.build_candidate_table(
+            chip_context=chip_context,
+            item_l=search_result["item_l"],
+            asset_keys_by_item=search_result["asset_keys_by_item"],
+            planet_d=planet_d,
+        )
+        logger.info(
+            f"search returned {len(summary_df):,} scenes with "
+            f"{int(summary_df['covers_chip'].sum()) if not summary_df.empty else 0:,} full-coverage scenes for "
+            f"{chip_context['event']}/{chip_context['chip_id']}"
+        )
+        if not summary_df.empty:
+            logger.debug(f"returned item ids: {','.join(summary_df['item_id'].tolist())}")
+        coms.write_manifest(
+            manifest_d=coms.build_chip_search_manifest(chip_context=chip_context, summary_df=summary_df),
+            manifest_fp=chip_context["search_manifest_fp"],
+        )
+        coms.write_chip_search_summary(
+            chip_search_summary_df=coms.build_chip_search_summary(chip_context=chip_context, summary_df=summary_df),
+            chip_context=chip_context,
+            logger=logger,
+        )
+        logger.info(f"wrote chip search manifest to\n    {chip_context['search_manifest_fp']}")
+    except Exception:
+        logger.exception("manifest rule failed")
+        raise
 
 
 if "snakemake" in globals():

@@ -185,9 +185,27 @@ def main_2_fetch_match(snakemake):
 
         fail_on_no_match = bool(getattr(snakemake.params, "fail_on_no_match", False))
         matched = bool(summary_out_df.loc[0, "matched"])
+        attempted_n = int(summary_out_df.loc[0, "attempted_candidates"])
+        max_search_count = int(snakemake.params.chip_search_max)
+        status_d = {
+            "event": chip_context["event"],
+            "chip_id": chip_context["chip_id"],
+            "status": "matched" if matched else "no_match",
+            "matched": matched,
+            "attempted_candidates": attempted_n,
+            "max_search_count": max_search_count,
+            "summary_fp": str(chip_context["summary_fp"]),
+            "match_diagnostics_fp": str(chip_context["match_diagnostics_fp"]),
+            "runtime_seconds": runtime_seconds,
+        }
+        coms.write_match_status(status_d=status_d, chip_context=chip_context, logger=logger)
+        if not matched:
+            log_msg = (
+                f"no match for {chip_context['event']}/{chip_context['chip_id']} "
+                f"after {attempted_n} candidate attempt(s); max_search_count={max_search_count}"
+            )
+            logger.warning(log_msg)
         if fail_on_no_match and not matched:
-            attempted_n = int(summary_out_df.loc[0, "attempted_candidates"])
-            max_search_count = int(snakemake.params.chip_search_max)
             logger.error(
                 f"no match for {chip_context['event']}/{chip_context['chip_id']} "
                 f"after {attempted_n} candidate attempt(s); max_search_count={max_search_count}"

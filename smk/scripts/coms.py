@@ -246,6 +246,14 @@ def write_chip_summary(summary_df, chip_context, logger=None):
     log.info(f"wrote chip summary to\n    {chip_context['summary_fp']}")
 
 
+def write_match_status(status_d, chip_context, logger=None):
+    """Write a sidecar status JSON for one fetch-match rule outcome."""
+    log = logger or logging.getLogger(__name__)
+    status_fp = chip_context["chip_dir"] / "match_status.json"
+    write_manifest(manifest_d=_json_ready(status_d), manifest_fp=status_fp)
+    log.info(f"wrote match status to\n    {status_fp}")
+
+
 def expected_item_outputs(chip_context, item_id):
     """Return the expected output paths for one ordered item."""
     return {
@@ -568,7 +576,10 @@ async def order_and_download_chip(chip_context, selected_df, planet_d, logger=No
 def resolve_reference_fp(chip_context, path_d):
     """Resolve the original FloodPlanet PS tile for one chip."""
     reference_fp = path_d["floodplanet_root"] / chip_context["event"] / "PS" / f"{chip_context['chip_id']}.tif"
-    assert reference_fp.exists(), f"Missing FloodPlanet PS reference tile: {reference_fp}"
+    if not reference_fp.exists():
+        label_fp = path_d["floodplanet_root"] / chip_context["event"] / "labels" / f"{chip_context['chip_id']}.tif"
+        label_msg = f"\nFound label tile only; labels cannot be used as PS reference:\n    {label_fp}" if label_fp.exists() else ""
+        raise FileNotFoundError(f"Missing FloodPlanet PS reference tile:\n    {reference_fp}{label_msg}")
     return reference_fp
 
 

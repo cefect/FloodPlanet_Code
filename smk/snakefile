@@ -144,6 +144,12 @@ match_diagnostics_fp_l = expand(
     event=target_d["Event"],
     chip_id=target_d["Chip_ID"],
 )
+match_status_fp_l = expand(
+    str(OUT_DIR / "{event}" / "{chip_id}" / "match_status.json"),
+    zip,
+    event=target_d["Event"],
+    chip_id=target_d["Chip_ID"],
+)
 summary_fp_l = expand(
     str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv"),
     zip,
@@ -151,6 +157,26 @@ summary_fp_l = expand(
     chip_id=target_d["Chip_ID"],
 )
 concat_summary_fp = str(OUT_DIR / "summary_all.csv")
+event_diagnostics_d = {
+    event: expand(
+        str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json"),
+        zip,
+        event=event_df["Event"].tolist(),
+        chip_id=event_df["Chip_ID"].tolist(),
+    )
+    for event, event_df in index_gdf.sort_values(["Event", "Chip_ID"]).groupby("Event", sort=True)
+}
+event_status_d = {
+    event: expand(
+        str(OUT_DIR / "{event}" / "{chip_id}" / "match_status.json"),
+        zip,
+        event=event_df["Event"].tolist(),
+        chip_id=event_df["Chip_ID"].tolist(),
+    )
+    for event, event_df in index_gdf.sort_values(["Event", "Chip_ID"]).groupby("Event", sort=True)
+}
+event_report_ipynb_fp_l = [str(OUT_DIR / event / "event_match_report.ipynb") for event in event_diagnostics_d]
+event_report_html_fp_l = [str(OUT_DIR / event / "event_match_report.html") for event in event_diagnostics_d]
 match_plot_fp_l = expand(
     str(OUT_DIR / "{event}" / "{chip_id}" / "match_plot.png"),
     zip,
@@ -165,7 +191,8 @@ rule all:
         event_sample=event_sample_fp,
         summary=concat_summary_fp,
         diagnostics=match_diagnostics_fp_l,
-        match_report=match_report_fp
+        status=match_status_fp_l,
+        event_reports=event_report_html_fp_l
     default_target: True
 
 
@@ -191,7 +218,8 @@ rule _3_fetch_chip_match:
         search_manifest_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "chip_search_manifest.json")
     output:
         summary_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "summary.csv"),
-        match_diagnostics_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json")
+        match_diagnostics_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_diagnostics.json"),
+        match_status_fp=str(OUT_DIR / "{event}" / "{chip_id}" / "match_status.json")
     log:
         str(OUT_DIR / "{event}" / "{chip_id}" / "_3_fetch_chip_match.log")
     params:
@@ -217,7 +245,7 @@ rule _3_fetch_chip_match:
         match_mean_mae_max=float(config["match_mean_mae_max"]),
         compare_resampling=str(config["compare_resampling"]),
         write_compare_debug=bool(config["write_compare_debug"]),
-        fail_on_no_match=True,
+        fail_on_no_match=False,
         logging_level="DEBUG"
     script:
         "scripts/_2_fetch_match.py"
@@ -303,6 +331,29 @@ rule _4_plot_match_chip:
 rule _4_plot_match_chips_all:
     input:
         match_plot_fp_l
+
+
+rule _4_event_match_notebook:
+    input:
+        template_fp=str(SNAKEFILE_DIR / "templates" / "event_match_report.ipynb"),
+        diagnostics_fp_l=lambda wildcards: event_diagnostics_d[wildcards.event],
+        status_fp_l=lambda wildcards: event_status_d[wildcards.event]
+    output:
+        ipynb_fp=str(OUT_DIR / "{event}" / "event_match_report.ipynb"),
+        html_fp=str(OUT_DIR / "{event}" / "event_match_report.html")
+    log:
+        str(OUT_DIR / "{event}" / "event_match_report.log")
+    params:
+        out_dir=str(OUT_DIR),
+        event="{event}",
+        logging_level="DEBUG"
+    script:
+        "scripts/_4_event_match_notebook.py"
+
+
+rule _4_event_match_notebooks_all:
+    input:
+        event_report_html_fp_l
 
 
 rule _4_match_report:
