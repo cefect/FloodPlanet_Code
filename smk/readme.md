@@ -7,13 +7,13 @@ Shared backend helpers live in [`scripts/coms.py`](/workspace/smk/scripts/coms.p
 Run the complete US event subset:
 
 ```bash
-cd /workspace
+ 
 export SNAKEMAKE_PROFILE=smk/profiles/local
 event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
 
 snakemake -n --keep-going --config event_ids="$event_ids" --cores 6
 
-snakemake --keep-going --config event_ids="$event_ids" --cores 6
+snakemake --config event_ids="$event_ids" --cores 16
 ```
 
 Useful narrow checks:
@@ -28,35 +28,34 @@ snakemake --keep-going --config event_ids="US-Nebraska" --cores 4
 
 ## SETUP
 
-The local devcontainer uses `cefect/usf:dev-v4.0` from [`.devcontainer/docker-compose.yml`](/workspace/.devcontainer/docker-compose.yml).
-That image is larger than needed for this workflow.
-Use [environment.remote.yml](/workspace/smk/environment.remote.yml) on `sscc-linstat-vm`.
+Use [environment.remote.yml](/workspace/smk/environment.remote.yml) for a standalone workflow environment.
 It keeps only the Snakemake, Planet SDK, and geospatial packages imported by `smk/snakefile` and `smk/scripts`.
-The workflow paths are machine-specific and belong in local `smk/config.yaml`.
-Use absolute paths in that config so the workflow does not depend on the shell working directory.
+Create the environment once per machine.
 
 ```bash
-ssh sscc-linstat-vm
-cd /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code
+cd /path/to/FloodPlanet_Code
 
-export TMPDIR="${TMPDIR:-$HOME/tmp}"
-export CONDA_PKGS_DIRS="${CONDA_PKGS_DIRS:-$HOME/tmp/conda-pkgs}"
+export TMPDIR="${TMPDIR:-/tmp/$USER}"
+export CONDA_PKGS_DIRS="${CONDA_PKGS_DIRS:-$TMPDIR/conda-pkgs}"
 mkdir -p "$TMPDIR" "$CONDA_PKGS_DIRS"
 source "$(conda info --base)/etc/profile.d/conda.sh"
 CONDA_CHANNEL_PRIORITY=strict conda env create -f smk/environment.remote.yml
 conda activate floodplanet-smk
 ```
 
-Build the remote machine-specific config:
+Workflow paths are machine-specific and belong in local `smk/config.yaml`.
+Use absolute paths in that config so the workflow does not depend on the shell working directory.
+Keep secrets outside the repo and expose them through `$XDG_CONFIG_HOME/USFloods_inference/secrets.toml` or `PL_API_KEY`.
+Use `_outputs` for workflow outputs.
 
 ```bash
-cd /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code
+cd /path/to/FloodPlanet_Code
 
 cat > smk/config.yaml <<'YAML'
-index_fp: /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code/stac_catalog.geojson
-floodplanet_root: /home/s/sbryant8/LS/10_IO/2501_NSFc/zhangFloodPlanet2025
-out_dir: /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code/_outputs
-cache_dir: /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code/_outputs/.cache
+index_fp: /absolute/path/to/FloodPlanet_Code/stac_catalog.geojson
+floodplanet_root: /absolute/path/to/FloodPlanet
+out_dir: /absolute/path/to/FloodPlanet_Code/_outputs
+cache_dir: /absolute/path/to/FloodPlanet_Code/_outputs/.cache
 search_limit: 50
 lower_window_hours: 72
 upper_window_hours: 72
@@ -87,24 +86,77 @@ event_ids: []
 YAML
 ```
 
-The Planet API key must be available through `$XDG_CONFIG_HOME/USFloods_inference/secrets.toml` or the `PL_API_KEY` environment variable.
+Update the local `*.code-workspace` file when using VS Code.
+Set the Python interpreter to the Conda environment.
+Store PROJ, Matplotlib, Jupyter, and IPython runtime paths on the Conda environment.
 
 ```bash
-cd /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code
+conda env config vars set -p /absolute/path/to/miniforge3/envs/floodplanet-smk \
+  PROJ_DATA=/absolute/path/to/miniforge3/envs/floodplanet-smk/share/proj \
+  PROJ_LIB=/absolute/path/to/miniforge3/envs/floodplanet-smk/share/proj \
+  MPLCONFIGDIR=/tmp/$USER/matplotlib \
+  JUPYTER_CONFIG_DIR=/tmp/$USER/jupyter/config \
+  JUPYTER_DATA_DIR=/tmp/$USER/jupyter/data \
+  JUPYTER_RUNTIME_DIR=/tmp/$USER/jupyter/runtime \
+  IPYTHONDIR=/tmp/$USER/ipython
+```
+
+Use a project rcfile for every new VS Code console.
+Keep host-specific activation in the workspace file instead of shared `.vscode/settings.json`.
+
+```json
+{
+  "settings": {
+    "python.defaultInterpreterPath": "/absolute/path/to/miniforge3/envs/floodplanet-smk/bin/python",
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.profiles.linux": {
+      "bash": {
+        "path": "/bin/bash",
+        "args": [
+          "--rcfile",
+          "${workspaceFolder}/.vscode/remote_deploy.bash",
+          "-i"
+        ]
+      }
+    }
+  }
+}
+```
+
+Dry-run the configured workflow before running fetches.
+
+```bash
+cd /path/to/FloodPlanet_Code
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate floodplanet-smk
 
 export PYTHONPATH="$PWD"
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-export TMPDIR="${TMPDIR:-$HOME/tmp}"
-mkdir -p "$TMPDIR" _outputs
+export TMPDIR="${TMPDIR:-/tmp/$USER}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$TMPDIR/cache}"
+mkdir -p \
+  "$TMPDIR" \
+  "$XDG_CACHE_HOME" \
+  "${MPLCONFIGDIR:-$TMPDIR/matplotlib}" \
+  "${JUPYTER_CONFIG_DIR:-$TMPDIR/jupyter/config}" \
+  "${JUPYTER_DATA_DIR:-$TMPDIR/jupyter/data}" \
+  "${JUPYTER_RUNTIME_DIR:-$TMPDIR/jupyter/runtime}" \
+  "${IPYTHONDIR:-$TMPDIR/ipython}" \
+  _outputs
 
 event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
 
 snakemake -n --profile smk/profiles/local --config event_ids="$event_ids"
 ```
 
-Run after the dry-run looks correct.
+If migrated outputs already exist under `_outputs`, mark them current through Snakemake before proving the dry-run.
+
+```bash
+snakemake --touch --profile smk/profiles/local --config event_ids="$event_ids"
+snakemake -n --profile smk/profiles/local --config event_ids="$event_ids"
+```
+
+Run the workflow only after the dry-run looks correct.
 
 ```bash
 snakemake --profile smk/profiles/local --config event_ids="$event_ids"

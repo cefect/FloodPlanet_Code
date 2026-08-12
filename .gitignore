@@ -134,3 +134,4 @@ _outputs
 smk/config.yaml
 
 *.qgz
+.vscode/remote_deploy.bash
