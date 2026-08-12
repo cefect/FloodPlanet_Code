@@ -27,6 +27,15 @@ def _parse_id_values(value):
     return value_l
 
 
+def _config_path(key, default=None):
+    """Return an absolute machine-specific path from the workflow config."""
+    value = config.get(key, default)
+    assert value is not None, f"Missing config path: {key}"
+    path = Path(value).expanduser()
+    assert path.is_absolute(), f"Config path must be absolute: {key}={path}"
+    return path
+
+
 def _event_seed(event):
     digest = hashlib.sha256(f"{SAMPLE_SEED}:{event}".encode("utf-8")).hexdigest()
     return int(digest[:8], 16)
@@ -79,9 +88,10 @@ def _select_event_sample(event_gdf):
     return sample_gdf
 
 
-INDEX_FP = Path(config["index_fp"])
-OUT_DIR = Path(config["out_dir"])
-CACHE_DIR = Path(config.get("cache_dir") or (OUT_DIR / ".cache"))
+INDEX_FP = _config_path("index_fp")
+OUT_DIR = _config_path("out_dir")
+CACHE_DIR = _config_path("cache_dir", OUT_DIR / ".cache")
+FLOODPLANET_ROOT = _config_path("floodplanet_root")
 TMPDIR = Path(tempfile.gettempdir())
 CHIP_ID_L = _parse_id_values(config.get("chip_ids", []))
 EVENT_ID_L = _parse_id_values(config.get("event_ids", []))
@@ -91,6 +101,7 @@ MAX_SEARCH_COUNT = int(config.get("max_search_count", config.get("chip_search_ma
 logger.info(f"loading chip index from {INDEX_FP}")
 logger.info(f"writing outputs under {OUT_DIR}")
 logger.info(f"using fetch cache under {CACHE_DIR}")
+logger.info(f"reading FloodPlanet inputs from {FLOODPLANET_ROOT}")
 logger.info(f"using system tmpdir {TMPDIR}")
 if EVENT_ID_L:
     logger.info(f"event_ids filter: {','.join(EVENT_ID_L)}")
@@ -188,7 +199,7 @@ rule _3_fetch_chip_match:
         out_dir=str(OUT_DIR),
         cache_dir=str(CACHE_DIR),
         tmpdir=str(TMPDIR),
-        floodplanet_root=str(config["floodplanet_root"]),
+        floodplanet_root=str(FLOODPLANET_ROOT),
         chip_search_max=MAX_SEARCH_COUNT,
         candidate_min_coverage_ratio=float(config["candidate_min_coverage_ratio"]),
         search_limit=int(config["search_limit"]),
@@ -283,7 +294,7 @@ rule _4_plot_match_chip:
     log:
         str(OUT_DIR / "{event}" / "{chip_id}" / "_4_plot_match_chip.log")
     params:
-        floodplanet_root=str(config["floodplanet_root"]),
+        floodplanet_root=str(FLOODPLANET_ROOT),
         logging_level="DEBUG"
     script:
         "scripts/_4_plot_match_chip.py"
