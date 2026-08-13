@@ -92,6 +92,7 @@ INDEX_FP = _config_path("index_fp")
 OUT_DIR = _config_path("out_dir")
 CACHE_DIR = _config_path("cache_dir", OUT_DIR / ".cache")
 FLOODPLANET_ROOT = _config_path("floodplanet_root")
+CSDA_DATES_FP = SNAKEFILE_DIR.parent / "STAC" / "csda_dates_clean.json"
 TMPDIR = Path(tempfile.gettempdir())
 CHIP_ID_L = _parse_id_values(config.get("chip_ids", []))
 EVENT_ID_L = _parse_id_values(config.get("event_ids", []))
@@ -175,8 +176,8 @@ event_status_d = {
     )
     for event, event_df in index_gdf.sort_values(["Event", "Chip_ID"]).groupby("Event", sort=True)
 }
-event_report_ipynb_fp_l = [str(OUT_DIR / event / "event_match_report.ipynb") for event in event_diagnostics_d]
-event_report_html_fp_l = [str(OUT_DIR / event / "event_match_report.html") for event in event_diagnostics_d]
+event_report_ipynb_fp_l = [str(OUT_DIR / "_4_event_match_notebook" / event / "event_match_report.ipynb") for event in event_diagnostics_d]
+event_report_html_fp_l = [str(OUT_DIR / "_4_event_match_notebook" / event / "event_match_report.html") for event in event_diagnostics_d]
 match_plot_fp_l = expand(
     str(OUT_DIR / "{event}" / "{chip_id}" / "match_plot.png"),
     zip,
@@ -336,13 +337,14 @@ rule _4_plot_match_chips_all:
 rule _4_event_match_notebook:
     input:
         template_fp=str(SNAKEFILE_DIR / "templates" / "event_match_report.ipynb"),
+        csda_dates_fp=str(CSDA_DATES_FP),
         diagnostics_fp_l=lambda wildcards: event_diagnostics_d[wildcards.event],
         status_fp_l=lambda wildcards: event_status_d[wildcards.event]
     output:
-        ipynb_fp=str(OUT_DIR / "{event}" / "event_match_report.ipynb"),
-        html_fp=str(OUT_DIR / "{event}" / "event_match_report.html")
+        ipynb_fp=str(OUT_DIR / "_4_event_match_notebook" / "{event}" / "event_match_report.ipynb"),
+        html_fp=str(OUT_DIR / "_4_event_match_notebook" / "{event}" / "event_match_report.html")
     log:
-        str(OUT_DIR / "{event}" / "event_match_report.log")
+        str(OUT_DIR / "_4_event_match_notebook" / "{event}" / "event_match_report.log")
     params:
         out_dir=str(OUT_DIR),
         event="{event}",

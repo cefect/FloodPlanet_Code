@@ -6,6 +6,7 @@ import base64, io, json, logging, sys, traceback
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import nbformat
 
 
@@ -23,6 +24,7 @@ def main_4_event_match_notebook(snakemake):
     log.addHandler(file_handler)
     path_d = {
         "template_fp": Path(snakemake.input.template_fp),
+        "csda_dates_fp": Path(snakemake.input.csda_dates_fp),
         "ipynb_fp": Path(snakemake.output.ipynb_fp),
         "html_fp": Path(snakemake.output.html_fp),
     }
@@ -38,12 +40,35 @@ def main_4_event_match_notebook(snakemake):
         f"DIAGNOSTICS_FP_L = {diagnostics_fp_l!r}",
         f"STATUS_FP_L = {status_fp_l!r}",
         f"OUTPUT_DIR = {str(Path(snakemake.params.out_dir))!r}",
+        f"CSDA_DATES_FP = {str(path_d['csda_dates_fp'])!r}",
     ])
     nb.cells[1].source = parameter_source
 
+    render_state_d = {"cell": None}
+
+    def _append_figure(fig, cell):
+        """Append one Matplotlib figure to notebook outputs and HTML in display order."""
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", dpi=120, bbox_inches="tight")
+        data = base64.b64encode(buf.getvalue()).decode("ascii")
+        cell.outputs.append(nbformat.v4.new_output("display_data", data={"image/png": data}, metadata={}))
+        html_part_l.append(f"<p><img src='data:image/png;base64,{data}'></p>")
+        plt.close(fig)
+
     def _display(obj):
         """Provide a minimal notebook display replacement for direct execution."""
-        if hasattr(obj, "to_string"):
+        cell = render_state_d["cell"]
+        if isinstance(obj, Figure):
+            _append_figure(obj, cell)
+        elif hasattr(obj, "to_html"):
+            html = obj.to_html(index=False)
+            cell.outputs.append(nbformat.v4.new_output("display_data", data={"text/html": html}, metadata={}))
+            html_part_l.append(html)
+        elif hasattr(obj, "_repr_html_"):
+            html = obj._repr_html_()
+            cell.outputs.append(nbformat.v4.new_output("display_data", data={"text/html": html}, metadata={}))
+            html_part_l.append(html)
+        elif hasattr(obj, "to_string"):
             print(obj.to_string(index=False))
         else:
             print(obj)
@@ -74,6 +99,7 @@ def main_4_event_match_notebook(snakemake):
         stderr = io.StringIO()
         old_stdout, old_stderr = sys.stdout, sys.stderr
         fig_start = set(plt.get_fignums())
+        render_state_d["cell"] = cell
         try:
             sys.stdout, sys.stderr = stdout, stderr
             exec(cell.source, namespace_d)
@@ -92,12 +118,7 @@ def main_4_event_match_notebook(snakemake):
             html_part_l.append(f"<pre>{stderr.getvalue()}</pre>")
         for fig_num in sorted(set(plt.get_fignums()) - fig_start):
             fig = plt.figure(fig_num)
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=120, bbox_inches="tight")
-            data = base64.b64encode(buf.getvalue()).decode("ascii")
-            cell.outputs.append(nbformat.v4.new_output("display_data", data={"image/png": data}, metadata={}))
-            html_part_l.append(f"<p><img src='data:image/png;base64,{data}'></p>")
-            plt.close(fig)
+            _append_figure(fig, cell)
 
     nbformat.write(nb, path_d["ipynb_fp"])
     html_part_l.append("</body></html>")

@@ -27,7 +27,7 @@ Run the complete US event subset:
 export SNAKEMAKE_PROFILE=smk/profiles/local
 event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
 
-snakemake -n --config event_ids="$event_ids" --cores 6
+snakemake -n --config event_ids="$event_ids" 
 
 snakemake --config event_ids="$event_ids" --cores 16
 ```
