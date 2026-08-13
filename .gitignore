@@ -135,3 +135,4 @@ smk/config.yaml
 
 *.qgz
 .vscode/remote_deploy.bash
+plan.md
