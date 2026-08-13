@@ -82,7 +82,7 @@ def _rgb_plot_arr(arr):
         rgb_arr = np.stack([gray_arr, gray_arr, gray_arr], axis=-1)
     else:
         rgb_arr = np.stack([_normalize_band(arr[i]) for i in range(min(3, arr.shape[0]))], axis=-1)
-    return np.nan_to_num(rgb_arr, nan=0.0)
+    return np.nan_to_num(rgb_arr, nan=1.0)
 
 
 def _hist_ready_arr(arr):

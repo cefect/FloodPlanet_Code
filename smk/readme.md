@@ -6,21 +6,11 @@ Shared backend helpers live in [`scripts/coms.py`](/workspace/smk/scripts/coms.p
 
 
 
-```bash
-cd /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code
-
-
-tmux ls
-tmux attach -t floodplanet
-tmux kill-session -t floodplanet
-# detach: Ctrl-b then d
-```
-
- 
+## USE
 Run the complete US event subset:
 
 ```bash
- 
+
 export SNAKEMAKE_PROFILE=smk/profiles/local
 event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
 
@@ -161,13 +151,6 @@ echo "$CONDA_DEFAULT_ENV"
 echo "$PYTHONPATH"
 echo "$SNAKEMAKE_PROFILE"
 pwd
-```
-
-Check tmux sessions from another SSH terminal.
-
-```bash
-tmux ls
-tmux list-panes -a -F '#S:#I.#P cmd=#{pane_current_command} path=#{pane_current_path} pid=#{pane_pid}'
 ```
 
 ## migrate

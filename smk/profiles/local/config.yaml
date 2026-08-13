@@ -6,3 +6,9 @@ rerun-incomplete: true
 latency-wait: 30
 keep-going: true
 show-failed-logs: true
+rerun-triggers:
+  - code
+  - input
+  - mtime
+  - params
+  - software-env
