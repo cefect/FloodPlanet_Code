@@ -4,19 +4,16 @@ This workflow rebuilds PlanetScope fetch/match outputs for FloodPlanet chips lis
 
 Shared backend helpers live in [`scripts/coms.py`](/workspace/smk/scripts/coms.py), workflow configuration is in [`config.yaml`](/workspace/smk/config.yaml), and `snakemake --config` accepts comma-separated `event_ids` and `chip_ids` subsets.
 
-Open a persistent terminal with `tmux`.
-Prefer `tmux` on this system.
-It is newer than `screen`, has better named sessions and pane controls, and is installed at `/bin/tmux`.
-Use `screen` only as a fallback for very old systems or muscle memory.
+
 
 ```bash
 cd /home/s/sbryant8/LS/09_REPOS/FloodPlanet_Code
-tmux new -s floodplanet 'bash --rcfile .vscode/remote_deploy.bash -i'
 
-# detach: Ctrl-b then d
+
 tmux ls
 tmux attach -t floodplanet
 tmux kill-session -t floodplanet
+# detach: Ctrl-b then d
 ```
 
  
@@ -27,9 +24,9 @@ Run the complete US event subset:
 export SNAKEMAKE_PROFILE=smk/profiles/local
 event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
 
-snakemake -n --config event_ids="$event_ids" 
+snakemake -n --config event_ids="$event_ids" --quiet rules
 
-snakemake --config event_ids="$event_ids" --cores 16
+snakemake --config event_ids="$event_ids" --cores 24
 ```
 
 Useful narrow checks:
@@ -133,43 +130,44 @@ Keep host-specific activation in the workspace file instead of shared `.vscode/s
 }
 ```
 
-Dry-run the configured workflow before running fetches.
+### alternate tmux-integrated
 
-```bash
-cd /path/to/FloodPlanet_Code
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate floodplanet-smk
+Use `tmux-integrated` as the VS Code terminal layer on SSH Remote.
+Keep the project bash setup in `.vscode/remote_deploy.bash`.
+Do not change user, remote, or machine-wide VS Code settings for this project.
 
-export PYTHONPATH="$PWD"
-export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-export TMPDIR="${TMPDIR:-/tmp/$USER}"
-export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$TMPDIR/cache}"
-mkdir -p \
-  "$TMPDIR" \
-  "$XDG_CACHE_HOME" \
-  "${MPLCONFIGDIR:-$TMPDIR/matplotlib}" \
-  "${JUPYTER_CONFIG_DIR:-$TMPDIR/jupyter/config}" \
-  "${JUPYTER_DATA_DIR:-$TMPDIR/jupyter/data}" \
-  "${JUPYTER_RUNTIME_DIR:-$TMPDIR/jupyter/runtime}" \
-  "${IPYTHONDIR:-$TMPDIR/ipython}" \
-  _outputs
+The project workspace can make `tmux-integrated` the default terminal profile.
+The `bash` profile remains as a plain fallback terminal.
+The tmux pane shell should launch `.vscode/tmux_integrated_shell.bash`, which then runs `.vscode/remote_deploy.bash`.
 
-event_ids="US-Alabama,US-Arkansas,US-Carolina,US-Dakota,US-Kansas,US-Nebraska,US-Oklahoma,US-Texas"
-
-snakemake -n --profile smk/profiles/local --config event_ids="$event_ids"
+```json
+{
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "tmux-integrated",
+    "terminal.integrated.enablePersistentSessions": false,
+    "tmux-integrated.cwd": "${workspaceFolder}",
+    "tmux-integrated.sessionName": "FloodPlanet_Code",
+    "tmux-integrated.shell": "${workspaceFolder}/.vscode/tmux_integrated_shell.bash"
+  }
+}
 ```
 
-If migrated outputs already exist under `_outputs`, mark them current through Snakemake before proving the dry-run.
+Confirm the extension is installed on the SSH remote extension host before relying on the profile.
+Open a new VS Code terminal and check the project shell state.
 
 ```bash
-snakemake --touch --profile smk/profiles/local --config event_ids="$event_ids"
-snakemake -n --profile smk/profiles/local --config event_ids="$event_ids"
+echo "$TMUX"
+echo "$CONDA_DEFAULT_ENV"
+echo "$PYTHONPATH"
+echo "$SNAKEMAKE_PROFILE"
+pwd
 ```
 
-Run the workflow only after the dry-run looks correct.
+Check tmux sessions from another SSH terminal.
 
 ```bash
-snakemake --profile smk/profiles/local --config event_ids="$event_ids"
+tmux ls
+tmux list-panes -a -F '#S:#I.#P cmd=#{pane_current_command} path=#{pane_current_path} pid=#{pane_pid}'
 ```
 
 ## migrate
