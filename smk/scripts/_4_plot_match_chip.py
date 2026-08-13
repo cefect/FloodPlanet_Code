@@ -129,6 +129,14 @@ def _fmt_metric(value, precision=3):
     return f"{float(value):.{precision}f}"
 
 
+def _axis_title(label, chip_context, datetime_value, match_rank):
+    """Build a compact per-axis title with chip and match context."""
+    return (
+        f"{label}\n"
+        f"{chip_context['chip_id']} | dt: {_fmt_ts(datetime_value)} | rank: {match_rank or 'NA'}"
+    )
+
+
 def _select_attempt(match_d):
     attempt_l = match_d.get("attempts", [])
     compared_l = [d for d in attempt_l if d.get("compare_metrics") is not None and d.get("raster_fp") and Path(d["raster_fp"]).exists()]
@@ -224,17 +232,26 @@ def main(snakemake):
             ax_hist.plot(center_v, hist_v, color=BAND_COLOR_D.get(band_name, "black"), linewidth=0.9, linestyle="--", label=f"{band_name} fetch")
 
     ax_ref.imshow(_rgb_plot_arr(ref_arr), interpolation="nearest", aspect="equal")
-    ax_ref.set_title("FloodPlanet original", fontsize=fontsize)
+    ax_ref.set_title(
+        _axis_title("FloodPlanet original", chip_context, chip_context.get("reference_datetime"), attempt_d.get("match_candidate_rank")),
+        fontsize=fontsize,
+    )
     ax_ref.set_axis_off()
     ax_ref.text(0.98, 0.98, f"dt: {_fmt_ts(chip_context.get('reference_datetime'))}", transform=ax_ref.transAxes, ha="right", va="top", fontsize=fontsize, bbox=dict(boxstyle="round", facecolor="white", alpha=0.85, edgecolor="0.5"))
 
     ax_fetch.imshow(_rgb_plot_arr(fetch_arr), interpolation="nearest", aspect="equal")
-    ax_fetch.set_title("Fetch/match RGB", fontsize=fontsize)
+    ax_fetch.set_title(
+        _axis_title("Fetch/match RGB", chip_context, attempt_d.get("acquired"), attempt_d.get("match_candidate_rank")),
+        fontsize=fontsize,
+    )
     ax_fetch.set_axis_off()
     facecolor = "#2ca02c" if bool((attempt_d.get("compare_metrics") or {}).get("matched", False)) else "#d62728"
     ax_fetch.text(0.98, 0.98, _attempt_text(attempt_d), transform=ax_fetch.transAxes, ha="right", va="top", fontsize=fontsize, bbox=dict(boxstyle="round", facecolor=facecolor, alpha=0.5, edgecolor="0.5"))
 
-    ax_label.set_title("FloodPlanet label", fontsize=fontsize)
+    ax_label.set_title(
+        _axis_title("FloodPlanet label", chip_context, chip_context.get("reference_datetime"), attempt_d.get("match_candidate_rank")),
+        fontsize=fontsize,
+    )
     ax_label.set_axis_off()
     if label_arr is None:
         ax_label.text(0.5, 0.5, "label missing", transform=ax_label.transAxes, ha="center", va="center", fontsize=fontsize)
@@ -244,7 +261,10 @@ def main(snakemake):
         ax_label.legend(handles=_label_legend_handles(label_band_arr), loc="lower left", fontsize=fontsize - 1, frameon=True)
         ax_label.text(0.98, 0.98, _meta_text(label_meta_d), transform=ax_label.transAxes, ha="right", va="top", fontsize=fontsize, bbox=dict(boxstyle="round", facecolor="white", alpha=0.85, edgecolor="0.5"))
 
-    ax_hist.set_title("Per-band histograms", fontsize=fontsize)
+    ax_hist.set_title(
+        _axis_title("Per-band histograms", chip_context, attempt_d.get("acquired"), attempt_d.get("match_candidate_rank")),
+        fontsize=fontsize,
+    )
     ax_hist.set_xlabel("normalized value", fontsize=fontsize)
     ax_hist.set_ylabel("density", fontsize=fontsize)
     ax_hist.grid(True, alpha=0.2)
