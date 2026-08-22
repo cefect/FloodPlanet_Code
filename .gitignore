@@ -137,3 +137,4 @@ smk/config.yaml
 .vscode/remote_deploy.bash
 plan.md
 .vscode/tmux_integrated_shell.bash
+.vscode/init.bash
